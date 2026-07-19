@@ -93,6 +93,22 @@ let TableService = class TableService {
         const saved = await this.tableRepository.save(table);
         return { success: true, message: 'Table updated', data: saved };
     }
+    async dropdown(currentUser) {
+        const where = { isActive: true };
+        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
+            currentUser.role === role_enum_1.Role.ADMIN) {
+            where.createdBy = currentUser.id;
+        }
+        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+            where.businessId = currentUser.businessId;
+        }
+        const data = await this.tableRepository.find({
+            where,
+            select: { id: true, tableName: true, totalSeat: true },
+            order: { tableName: 'ASC' },
+        });
+        return { success: true, data };
+    }
     async remove(id, currentUser) {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)

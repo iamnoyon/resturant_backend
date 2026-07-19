@@ -56,13 +56,6 @@ export class SeedService implements OnModuleInit {
       10,
     );
 
-    const business = this.businessRepository.create({
-      businessName: 'Default Restaurant',
-      area: 'Main Area',
-    } as unknown as Business);
-
-    const savedBusiness = await this.businessRepository.save(business);
-
     const admin = this.userRepository.create({
       name: this.configService.get<string>('ADMIN_NAME', 'Admin'),
       email: this.configService.get<string>(
@@ -73,14 +66,21 @@ export class SeedService implements OnModuleInit {
       password: adminPassword,
       role: Role.ADMIN,
       status: UserStatus.ACTIVE,
-      businessId: savedBusiness.id,
       createdBy: savedSuperadmin.id,
     } as unknown as User);
 
     const savedAdmin = await this.userRepository.save(admin);
 
-    savedBusiness.adminId = savedAdmin.id;
-    await this.businessRepository.save(savedBusiness);
+    const business = this.businessRepository.create({
+      businessName: 'Default Restaurant',
+      area: 'Main Area',
+      adminId: savedAdmin.id,
+    } as unknown as Business);
+
+    const savedBusiness = await this.businessRepository.save(business);
+
+    savedAdmin.businessId = savedBusiness.id;
+    await this.userRepository.save(savedAdmin);
 
     console.log(`[Seed] Admin created: ${savedAdmin.email}`);
     console.log('[Seed] Seeding completed.');

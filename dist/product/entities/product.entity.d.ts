@@ -8,6 +8,7 @@ export declare class Product {
     description: string;
     costPrice: number;
     soldPrice: number;
+    stock: number;
     isActive: boolean;
     businessId: number;
     business: Business;

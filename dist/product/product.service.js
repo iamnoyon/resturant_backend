@@ -56,9 +56,14 @@ let ProductService = class ProductService {
             relations: { category: true },
             order: { [sortBy]: sortOrder },
         });
+        const flattened = data.map(({ category, ...rest }) => ({
+            ...rest,
+            categoryId: category?.id ?? rest.categoryId,
+            categoryName: category?.categoryName ?? null,
+        }));
         return {
             success: true,
-            data,
+            data: flattened,
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
@@ -78,7 +83,13 @@ let ProductService = class ProductService {
             product.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
-        return { success: true, data: product };
+        const { category, ...rest } = product;
+        const flattened = {
+            ...rest,
+            categoryId: category?.id ?? rest.categoryId,
+            categoryName: category?.categoryName ?? null,
+        };
+        return { success: true, data: flattened };
     }
     async update(id, updateProductDto, currentUser) {
         const product = await this.productRepository.findOne({ where: { id } });
@@ -96,6 +107,40 @@ let ProductService = class ProductService {
         Object.assign(product, updateProductDto, { updatedBy: currentUser.id });
         const saved = await this.productRepository.save(product);
         return { success: true, message: 'Product updated', data: saved };
+    }
+    async dropdown(currentUser) {
+        const where = { isActive: true };
+        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
+            currentUser.role === role_enum_1.Role.ADMIN) {
+            where.createdBy = currentUser.id;
+        }
+        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+            where.businessId = currentUser.businessId;
+        }
+        const data = await this.productRepository.find({
+            where,
+            select: { id: true, productName: true, soldPrice: true, stock: true },
+            order: { productName: 'ASC' },
+        });
+        return { success: true, data };
+    }
+    async updateStock(id, stock, currentUser) {
+        const product = await this.productRepository.findOne({ where: { id } });
+        if (!product)
+            throw new common_1.NotFoundException('Product not found');
+        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
+            currentUser.role === role_enum_1.Role.ADMIN) &&
+            product.createdBy !== currentUser.id) {
+            throw new common_1.ForbiddenException('Access denied');
+        }
+        if (currentUser.role === role_enum_1.Role.CASHIER &&
+            product.businessId !== currentUser.businessId) {
+            throw new common_1.ForbiddenException('Access denied');
+        }
+        product.stock = Number(product.stock) + Number(stock);
+        product.updatedBy = currentUser.id;
+        const saved = await this.productRepository.save(product);
+        return { success: true, message: 'Stock updated', data: saved };
     }
     async remove(id, currentUser) {
         const product = await this.productRepository.findOne({ where: { id } });

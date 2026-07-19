@@ -21,6 +21,7 @@ let Product = class Product {
     description;
     costPrice;
     soldPrice;
+    stock;
     isActive;
     businessId;
     business;
@@ -59,6 +60,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
     __metadata("design:type", Number)
 ], Product.prototype, "soldPrice", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], Product.prototype, "stock", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)

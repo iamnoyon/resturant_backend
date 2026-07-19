@@ -11,12 +11,37 @@ export declare class ProductService {
         message: string;
         data: Product;
     }>;
-    findAll(query: PaginationQueryDto, currentUser: any): Promise<PaginatedResult<Product>>;
+    findAll(query: PaginationQueryDto, currentUser: any): Promise<PaginatedResult<any>>;
     findOne(id: number, currentUser: any): Promise<{
         success: boolean;
-        data: Product;
+        data: {
+            categoryId: number;
+            categoryName: string;
+            id: number;
+            productName: string;
+            description: string;
+            costPrice: number;
+            soldPrice: number;
+            stock: number;
+            isActive: boolean;
+            businessId: number;
+            business: import("../business/entities/business.entity").Business;
+            createdBy: number;
+            updatedBy: number;
+            createdAt: Date;
+            updatedAt: Date;
+        };
     }>;
     update(id: number, updateProductDto: UpdateProductDto, currentUser: any): Promise<{
+        success: boolean;
+        message: string;
+        data: Product;
+    }>;
+    dropdown(currentUser: any): Promise<{
+        success: boolean;
+        data: Product[];
+    }>;
+    updateStock(id: number, stock: number, currentUser: any): Promise<{
         success: boolean;
         message: string;
         data: Product;

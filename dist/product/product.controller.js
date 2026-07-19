@@ -33,8 +33,14 @@ let ProductController = class ProductController {
     findAll(query, currentUser) {
         return this.productService.findAll(query, currentUser);
     }
+    dropdown(currentUser) {
+        return this.productService.dropdown(currentUser);
+    }
     findOne(id, currentUser) {
         return this.productService.findOne(+id, currentUser);
+    }
+    updateStock(id, body, currentUser) {
+        return this.productService.updateStock(id, body.stock, currentUser);
     }
     update(id, updateProductDto, currentUser) {
         return this.productService.update(+id, updateProductDto, currentUser);
@@ -61,6 +67,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ProductController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)('dropdown'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "dropdown", null);
+__decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -68,6 +81,17 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ProductController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Patch)(':id/stock'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update product stock' }),
+    (0, swagger_1.ApiBody)({ schema: { properties: { stock: { type: 'number', example: 50 } } } }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object, Object]),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "updateStock", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),

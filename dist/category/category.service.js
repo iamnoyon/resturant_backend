@@ -93,6 +93,22 @@ let CategoryService = class CategoryService {
         const saved = await this.categoryRepository.save(category);
         return { success: true, message: 'Category updated', data: saved };
     }
+    async dropdown(currentUser) {
+        const where = { isActive: true };
+        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
+            currentUser.role === role_enum_1.Role.ADMIN) {
+            where.createdBy = currentUser.id;
+        }
+        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+            where.businessId = currentUser.businessId;
+        }
+        const data = await this.categoryRepository.find({
+            where,
+            select: { id: true, categoryName: true },
+            order: { categoryName: 'ASC' },
+        });
+        return { success: true, data };
+    }
     async remove(id, currentUser) {
         const category = await this.categoryRepository.findOne({ where: { id } });
         if (!category)

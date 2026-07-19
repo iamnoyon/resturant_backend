@@ -21,6 +21,10 @@ export declare class CategoryService {
         message: string;
         data: Category;
     }>;
+    dropdown(currentUser: any): Promise<{
+        success: boolean;
+        data: Category[];
+    }>;
     remove(id: number, currentUser: any): Promise<{
         success: boolean;
         message: string;

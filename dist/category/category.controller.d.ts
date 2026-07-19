@@ -11,6 +11,10 @@ export declare class CategoryController {
         data: import("./entities/category.entity").Category;
     }>;
     findAll(query: PaginationQueryDto, currentUser: any): Promise<import("../common/dto/pagination.dto").PaginatedResult<import("./entities/category.entity").Category>>;
+    dropdown(currentUser: any): Promise<{
+        success: boolean;
+        data: import("./entities/category.entity").Category[];
+    }>;
     findOne(id: string, currentUser: any): Promise<{
         success: boolean;
         data: import("./entities/category.entity").Category;

@@ -33,6 +33,9 @@ let CategoryController = class CategoryController {
     findAll(query, currentUser) {
         return this.categoryService.findAll(query, currentUser);
     }
+    dropdown(currentUser) {
+        return this.categoryService.dropdown(currentUser);
+    }
     findOne(id, currentUser) {
         return this.categoryService.findOne(+id, currentUser);
     }
@@ -60,6 +63,13 @@ __decorate([
     __metadata("design:paramtypes", [pagination_dto_1.PaginationQueryDto, Object]),
     __metadata("design:returntype", void 0)
 ], CategoryController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('dropdown'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], CategoryController.prototype, "dropdown", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

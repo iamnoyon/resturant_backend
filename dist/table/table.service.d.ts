@@ -21,6 +21,10 @@ export declare class TableService {
         message: string;
         data: Table;
     }>;
+    dropdown(currentUser: any): Promise<{
+        success: boolean;
+        data: Table[];
+    }>;
     remove(id: number, currentUser: any): Promise<{
         success: boolean;
         message: string;

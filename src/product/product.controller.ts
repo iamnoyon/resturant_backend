@@ -8,8 +8,9 @@ import {
   Delete,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -38,9 +39,25 @@ export class ProductController {
     return this.productService.findAll(query, currentUser);
   }
 
+  @Get('dropdown')
+  dropdown(@CurrentUser() currentUser: any) {
+    return this.productService.dropdown(currentUser);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.productService.findOne(+id, currentUser);
+  }
+
+  @Patch(':id/stock')
+  @ApiOperation({ summary: 'Update product stock' })
+  @ApiBody({ schema: { properties: { stock: { type: 'number', example: 50 } } } })
+  updateStock(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { stock: number },
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.productService.updateStock(id, body.stock, currentUser);
   }
 
   @Patch(':id')

@@ -108,6 +108,26 @@ export class TableService {
     return { success: true, message: 'Table updated', data: saved };
   }
 
+  async dropdown(currentUser: any) {
+    const where: any = { isActive: true };
+    if (
+      currentUser.role === Role.SUPERADMIN ||
+      currentUser.role === Role.ADMIN
+    ) {
+      where.createdBy = currentUser.id;
+    } else if (currentUser.role === Role.CASHIER) {
+      where.businessId = currentUser.businessId;
+    }
+
+    const data = await this.tableRepository.find({
+      where,
+      select: { id: true, tableName: true, totalSeat: true },
+      order: { tableName: 'ASC' },
+    });
+
+    return { success: true, data };
+  }
+
   async remove(id: number, currentUser: any) {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');

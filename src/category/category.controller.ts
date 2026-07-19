@@ -38,6 +38,11 @@ export class CategoryController {
     return this.categoryService.findAll(query, currentUser);
   }
 
+  @Get('dropdown')
+  dropdown(@CurrentUser() currentUser: any) {
+    return this.categoryService.dropdown(currentUser);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.categoryService.findOne(+id, currentUser);

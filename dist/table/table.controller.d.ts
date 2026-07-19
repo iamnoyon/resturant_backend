@@ -11,6 +11,10 @@ export declare class TableController {
         data: import("./entities/table.entity").Table;
     }>;
     findAll(query: PaginationQueryDto, currentUser: any): Promise<import("../common/dto/pagination.dto").PaginatedResult<import("./entities/table.entity").Table>>;
+    dropdown(currentUser: any): Promise<{
+        success: boolean;
+        data: import("./entities/table.entity").Table[];
+    }>;
     findOne(id: string, currentUser: any): Promise<{
         success: boolean;
         data: import("./entities/table.entity").Table;
