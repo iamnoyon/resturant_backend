@@ -31,8 +31,10 @@ let OrderService = class OrderService {
         const dateStr = now.getFullYear().toString() +
             (now.getMonth() + 1).toString().padStart(2, '0') +
             now.getDate().toString().padStart(2, '0');
-        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const orderId = `ORD-${dateStr}-${random}`;
+        const timeStr = now.getHours().toString().padStart(2, '0') +
+            now.getMinutes().toString().padStart(2, '0') +
+            now.getSeconds().toString().padStart(2, '0');
+        const orderId = `ORD-${dateStr}${timeStr}`;
         const order = this.orderRepository.create({
             ...createOrderDto,
             orderId,
