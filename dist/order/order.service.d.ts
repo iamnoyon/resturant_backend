@@ -12,7 +12,7 @@ export declare class OrderService {
         message: string;
         data: Order;
     }>;
-    findAll(query: PaginationQueryDto, currentUser: any): Promise<PaginatedResult<Order>>;
+    findAll(query: PaginationQueryDto, currentUser: any): Promise<PaginatedResult<any>>;
     findOne(id: number, currentUser: any): Promise<{
         success: boolean;
         data: Order;

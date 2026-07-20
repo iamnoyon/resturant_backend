@@ -53,9 +53,13 @@ let OrderService = class OrderService {
             relations: { table: true },
             order: { [sortBy]: sortOrder },
         });
+        const flattened = data.map(({ table, productIds, ...rest }) => ({
+            ...rest,
+            tableId: table?.id ?? rest.tableId,
+        }));
         return {
             success: true,
-            data,
+            data: flattened,
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }

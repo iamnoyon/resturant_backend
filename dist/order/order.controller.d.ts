@@ -11,7 +11,7 @@ export declare class OrderController {
         message: string;
         data: import("./entities/order.entity").Order;
     }>;
-    findAll(query: PaginationQueryDto, currentUser: any): Promise<import("../common/dto/pagination.dto").PaginatedResult<import("./entities/order.entity").Order>>;
+    findAll(query: PaginationQueryDto, currentUser: any): Promise<import("../common/dto/pagination.dto").PaginatedResult<any>>;
     findOne(id: string, currentUser: any): Promise<{
         success: boolean;
         data: import("./entities/order.entity").Order;

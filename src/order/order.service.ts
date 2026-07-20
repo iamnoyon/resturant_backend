@@ -35,7 +35,7 @@ export class OrderService {
   async findAll(
     query: PaginationQueryDto,
     currentUser: any,
-  ): Promise<PaginatedResult<Order>> {
+  ): Promise<PaginatedResult<any>> {
     const page = Math.max(+(query.page || 1), 1);
     const limit = Math.min(Math.max(+(query.limit || 10), 1), 100);
     const skip = (page - 1) * limit;
@@ -60,9 +60,14 @@ export class OrderService {
       order: { [sortBy]: sortOrder },
     });
 
+    const flattened = data.map(({ table, productIds, ...rest }) => ({
+      ...rest,
+      tableId: table?.id ?? rest.tableId,
+    }));
+
     return {
       success: true,
-      data,
+      data: flattened,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
