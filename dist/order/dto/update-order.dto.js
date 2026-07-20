@@ -24,6 +24,8 @@ class UpdateOrderDto {
 exports.UpdateOrderDto = UpdateOrderDto;
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 2, description: 'Table ID reference' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], UpdateOrderDto.prototype, "tableId", void 0);
 __decorate([
@@ -31,14 +33,20 @@ __decorate([
         example: [{ productId: 1, quantity: 2 }],
         description: 'Array of products with quantities',
     }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
     __metadata("design:type", Array)
 ], UpdateOrderDto.prototype, "products", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 600.0, description: 'Total bill amount' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], UpdateOrderDto.prototype, "totalBill", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 30.0, description: 'Discount amount' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], UpdateOrderDto.prototype, "discount", void 0);
 __decorate([
@@ -46,6 +54,8 @@ __decorate([
         example: 570.0,
         description: 'Sub-total after discount',
     }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], UpdateOrderDto.prototype, "subTotal", void 0);
 __decorate([
