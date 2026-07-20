@@ -16,6 +16,9 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  orderId: string;
+
   @Column()
   tableId: number;
 
@@ -23,8 +26,8 @@ export class Order {
   @JoinColumn({ name: 'tableId' })
   table: Table;
 
-  @Column({ type: 'simple-array' })
-  productIds: number[];
+  @Column({ type: 'json', nullable: true })
+  products: { productId: number; quantity: number }[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   totalBill: number;

@@ -3,9 +3,13 @@ import { Business } from '../../business/entities/business.entity';
 import { Table } from '../../table/entities/table.entity';
 export declare class Order {
     id: number;
+    orderId: string;
     tableId: number;
     table: Table;
-    productIds: number[];
+    products: {
+        productId: number;
+        quantity: number;
+    }[];
     totalBill: number;
     discount: number;
     subTotal: number;

@@ -16,9 +16,10 @@ const business_entity_1 = require("../../business/entities/business.entity");
 const table_entity_1 = require("../../table/entities/table.entity");
 let Order = class Order {
     id;
+    orderId;
     tableId;
     table;
-    productIds;
+    products;
     totalBill;
     discount;
     subTotal;
@@ -36,6 +37,10 @@ __decorate([
     __metadata("design:type", Number)
 ], Order.prototype, "id", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Order.prototype, "orderId", void 0);
+__decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
 ], Order.prototype, "tableId", void 0);
@@ -45,9 +50,9 @@ __decorate([
     __metadata("design:type", table_entity_1.Table)
 ], Order.prototype, "table", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'simple-array' }),
+    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
     __metadata("design:type", Array)
-], Order.prototype, "productIds", void 0);
+], Order.prototype, "products", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
     __metadata("design:type", Number)

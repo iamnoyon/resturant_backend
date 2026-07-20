@@ -7,11 +7,10 @@ export class UpdateOrderDto {
   tableId?: number;
 
   @ApiPropertyOptional({
-    example: [1, 4],
-    description: 'Array of product IDs',
-    type: [Number],
+    example: [{ productId: 1, quantity: 2 }],
+    description: 'Array of products with quantities',
   })
-  productIds?: number[];
+  products?: { productId: number; quantity: number }[];
 
   @ApiPropertyOptional({ example: 600.0, description: 'Total bill amount' })
   totalBill?: number;

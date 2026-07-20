@@ -17,19 +17,38 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const order_entity_1 = require("./entities/order.entity");
+const product_entity_1 = require("../product/entities/product.entity");
 const role_enum_1 = require("../common/enums/role.enum");
 let OrderService = class OrderService {
     orderRepository;
-    constructor(orderRepository) {
+    productRepository;
+    constructor(orderRepository, productRepository) {
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
     async create(createOrderDto, currentUser) {
+        const now = new Date();
+        const dateStr = now.getFullYear().toString() +
+            (now.getMonth() + 1).toString().padStart(2, '0') +
+            now.getDate().toString().padStart(2, '0');
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const orderId = `ORD-${dateStr}-${random}`;
         const order = this.orderRepository.create({
             ...createOrderDto,
+            orderId,
             businessId: currentUser.businessId,
             createdBy: currentUser.id,
         });
         const saved = await this.orderRepository.save(order);
+        for (const item of createOrderDto.products) {
+            if (item.quantity > 0) {
+                const product = await this.productRepository.findOne({ where: { id: item.productId } });
+                if (product) {
+                    product.stock = Math.max(0, Number(product.stock) - item.quantity);
+                    await this.productRepository.save(product);
+                }
+            }
+        }
         return { success: true, message: 'Order created', data: saved };
     }
     async findAll(query, currentUser) {
@@ -53,7 +72,7 @@ let OrderService = class OrderService {
             relations: { table: true },
             order: { [sortBy]: sortOrder },
         });
-        const flattened = data.map(({ table, productIds, ...rest }) => ({
+        const flattened = data.map(({ table, products, ...rest }) => ({
             ...rest,
             tableId: table?.id ?? rest.tableId,
         }));
@@ -141,6 +160,8 @@ exports.OrderService = OrderService;
 exports.OrderService = OrderService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(order_entity_1.Order)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(product_entity_1.Product)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], OrderService);
 //# sourceMappingURL=order.service.js.map

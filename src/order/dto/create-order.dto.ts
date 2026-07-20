@@ -6,11 +6,10 @@ export class CreateOrderDto {
   tableId: number;
 
   @ApiProperty({
-    example: [1, 2, 3],
-    description: 'Array of product IDs',
-    type: [Number],
+    example: [{ productId: 1, quantity: 2 }],
+    description: 'Array of products with quantities',
   })
-  productIds: number[];
+  products: { productId: number; quantity: number }[];
 
   @ApiProperty({
     example: 500.0,

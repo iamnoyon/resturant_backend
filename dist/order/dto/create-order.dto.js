@@ -14,7 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const bill_status_enum_1 = require("../../common/enums/bill-status.enum");
 class CreateOrderDto {
     tableId;
-    productIds;
+    products;
     totalBill;
     discount;
     subTotal;
@@ -27,12 +27,11 @@ __decorate([
 ], CreateOrderDto.prototype, "tableId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: [1, 2, 3],
-        description: 'Array of product IDs',
-        type: [Number],
+        example: [{ productId: 1, quantity: 2 }],
+        description: 'Array of products with quantities',
     }),
     __metadata("design:type", Array)
-], CreateOrderDto.prototype, "productIds", void 0);
+], CreateOrderDto.prototype, "products", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 500.0,

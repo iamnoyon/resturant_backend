@@ -15,7 +15,7 @@ const class_validator_1 = require("class-validator");
 const bill_status_enum_1 = require("../../common/enums/bill-status.enum");
 class UpdateOrderDto {
     tableId;
-    productIds;
+    products;
     totalBill;
     discount;
     subTotal;
@@ -28,12 +28,11 @@ __decorate([
 ], UpdateOrderDto.prototype, "tableId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        example: [1, 4],
-        description: 'Array of product IDs',
-        type: [Number],
+        example: [{ productId: 1, quantity: 2 }],
+        description: 'Array of products with quantities',
     }),
     __metadata("design:type", Array)
-], UpdateOrderDto.prototype, "productIds", void 0);
+], UpdateOrderDto.prototype, "products", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 600.0, description: 'Total bill amount' }),
     __metadata("design:type", Number)

@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Order } from './entities/order.entity';
+import { Product } from '../product/entities/product.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import {
@@ -20,15 +21,36 @@ export class OrderService {
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, currentUser: any) {
+    const now = new Date();
+    const dateStr = now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0');
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const orderId = `ORD-${dateStr}-${random}`;
+
     const order = this.orderRepository.create({
       ...createOrderDto,
+      orderId,
       businessId: currentUser.businessId,
       createdBy: currentUser.id,
     });
     const saved = await this.orderRepository.save(order);
+
+    for (const item of createOrderDto.products) {
+      if (item.quantity > 0) {
+        const product = await this.productRepository.findOne({ where: { id: item.productId } });
+        if (product) {
+          product.stock = Math.max(0, Number(product.stock) - item.quantity);
+          await this.productRepository.save(product);
+        }
+      }
+    }
+
     return { success: true, message: 'Order created', data: saved };
   }
 
@@ -60,7 +82,7 @@ export class OrderService {
       order: { [sortBy]: sortOrder },
     });
 
-    const flattened = data.map(({ table, productIds, ...rest }) => ({
+    const flattened = data.map(({ table, products, ...rest }) => ({
       ...rest,
       tableId: table?.id ?? rest.tableId,
     }));
