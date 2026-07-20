@@ -53,6 +53,9 @@ export class ProductService {
     if (query.search) {
       where.productName = ILike(`%${query.search}%`);
     }
+    if (query.categoryId) {
+      where.categoryId = +query.categoryId;
+    }
 
     const [data, total] = await this.productRepository.findAndCount({
       where,

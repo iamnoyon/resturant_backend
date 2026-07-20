@@ -16,6 +16,7 @@ let Category = class Category {
     id;
     categoryName;
     shortNote;
+    imageUrl;
     isActive;
     businessId;
     business;
@@ -37,6 +38,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Category.prototype, "shortNote", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Category.prototype, "imageUrl", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)

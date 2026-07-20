@@ -18,6 +18,7 @@ class CreateProductDto {
     costPrice;
     soldPrice;
     stock;
+    imageUrl;
 }
 exports.CreateProductDto = CreateProductDto;
 __decorate([
@@ -47,4 +48,11 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 50, description: 'Stock quantity', default: 0 }),
     __metadata("design:type", Number)
 ], CreateProductDto.prototype, "stock", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'https://example.com/image.png',
+        description: 'Product image URL',
+    }),
+    __metadata("design:type", String)
+], CreateProductDto.prototype, "imageUrl", void 0);
 //# sourceMappingURL=create-product.dto.js.map

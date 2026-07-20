@@ -21,4 +21,10 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({ example: 50, description: 'Stock quantity', default: 0 })
   stock?: number;
+
+  @ApiPropertyOptional({
+    example: 'https://example.com/image.png',
+    description: 'Product image URL',
+  })
+  imageUrl?: string;
 }

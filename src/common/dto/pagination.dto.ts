@@ -18,6 +18,9 @@ export class PaginationQueryDto {
   @ApiPropertyOptional({ example: 'beverage', description: 'Search term' })
   search?: string;
 
+  @ApiPropertyOptional({ example: 1, description: 'Filter by category ID' })
+  categoryId?: number;
+
   @ApiPropertyOptional({
     example: 'createdAt',
     description: 'Field to sort by',

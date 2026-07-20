@@ -15,6 +15,7 @@ class PaginationQueryDto {
     page;
     limit;
     search;
+    categoryId;
     sortBy;
     sortOrder;
 }
@@ -39,6 +40,10 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 'beverage', description: 'Search term' }),
     __metadata("design:type", String)
 ], PaginationQueryDto.prototype, "search", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 1, description: 'Filter by category ID' }),
+    __metadata("design:type", Number)
+], PaginationQueryDto.prototype, "categoryId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         example: 'createdAt',

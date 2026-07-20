@@ -28,6 +28,9 @@ export class Product {
   @Column({ nullable: true, type: 'text' })
   description: string;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   costPrice: number;
 

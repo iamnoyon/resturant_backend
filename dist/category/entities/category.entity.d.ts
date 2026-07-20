@@ -3,6 +3,7 @@ export declare class Category {
     id: number;
     categoryName: string;
     shortNote: string;
+    imageUrl: string;
     isActive: boolean;
     businessId: number;
     business: Business;

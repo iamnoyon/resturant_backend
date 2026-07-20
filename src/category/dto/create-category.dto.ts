@@ -9,4 +9,10 @@ export class CreateCategoryDto {
     description: 'Short note about category',
   })
   shortNote?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://example.com/image.png',
+    description: 'Category image URL',
+  })
+  imageUrl?: string;
 }

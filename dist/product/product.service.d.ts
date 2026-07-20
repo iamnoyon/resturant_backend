@@ -20,6 +20,7 @@ export declare class ProductService {
             id: number;
             productName: string;
             description: string;
+            imageUrl: string;
             costPrice: number;
             soldPrice: number;
             stock: number;

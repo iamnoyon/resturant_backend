@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 class CreateCategoryDto {
     categoryName;
     shortNote;
+    imageUrl;
 }
 exports.CreateCategoryDto = CreateCategoryDto;
 __decorate([
@@ -27,4 +28,11 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateCategoryDto.prototype, "shortNote", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'https://example.com/image.png',
+        description: 'Category image URL',
+    }),
+    __metadata("design:type", String)
+], CreateCategoryDto.prototype, "imageUrl", void 0);
 //# sourceMappingURL=create-category.dto.js.map

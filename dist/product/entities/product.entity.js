@@ -19,6 +19,7 @@ let Product = class Product {
     categoryId;
     category;
     description;
+    imageUrl;
     costPrice;
     soldPrice;
     stock;
@@ -52,6 +53,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
     __metadata("design:type", String)
 ], Product.prototype, "description", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Product.prototype, "imageUrl", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
     __metadata("design:type", Number)

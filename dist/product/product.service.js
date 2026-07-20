@@ -49,6 +49,9 @@ let ProductService = class ProductService {
         if (query.search) {
             where.productName = (0, typeorm_2.ILike)(`%${query.search}%`);
         }
+        if (query.categoryId) {
+            where.categoryId = +query.categoryId;
+        }
         const [data, total] = await this.productRepository.findAndCount({
             where,
             skip,

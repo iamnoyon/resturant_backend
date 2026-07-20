@@ -5,4 +5,5 @@ export declare class CreateProductDto {
     costPrice: number;
     soldPrice: number;
     stock?: number;
+    imageUrl?: string;
 }

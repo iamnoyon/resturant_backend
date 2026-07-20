@@ -20,6 +20,9 @@ export class Category {
   @Column({ nullable: true })
   shortNote: string;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({ default: true })
   isActive: boolean;
 

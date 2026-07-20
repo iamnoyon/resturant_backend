@@ -49,12 +49,7 @@ async function bootstrap() {
     const configService = app.get(config_1.ConfigService);
     app.use((0, cookie_parser_1.default)());
     app.enableCors({
-        origin: [
-            'http://localhost:3000',
-            'http://127.0.0.1:3000',
-            'http://localhost:3002',
-            'http://127.0.0.1:3002',
-        ],
+        origin: ['http://localhost:3001', 'http://127.0.0.1:3001'],
         credentials: true,
     });
     app.useGlobalFilters(new http_exception_filter_1.AllExceptionsFilter());
