@@ -15,6 +15,10 @@ export declare class ProductController {
         success: boolean;
         data: import("./entities/product.entity").Product[];
     }>;
+    findByCategory(categoryId: string, currentUser: any): Promise<{
+        success: boolean;
+        data: import("./entities/product.entity").Product[];
+    }>;
     findOne(id: string, currentUser: any): Promise<{
         success: boolean;
         data: {

@@ -44,6 +44,12 @@ export class ProductController {
     return this.productService.dropdown(currentUser);
   }
 
+  @Get('by-category')
+  @ApiOperation({ summary: 'Get all active products of a category' })
+  findByCategory(@Query('categoryId') categoryId: string, @CurrentUser() currentUser: any) {
+    return this.productService.findByCategory(+categoryId, currentUser);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.productService.findOne(+id, currentUser);

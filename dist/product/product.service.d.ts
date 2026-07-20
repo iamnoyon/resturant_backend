@@ -42,6 +42,10 @@ export declare class ProductService {
         success: boolean;
         data: Product[];
     }>;
+    findByCategory(categoryId: number, currentUser: any): Promise<{
+        success: boolean;
+        data: Product[];
+    }>;
     updateStock(id: number, stock: number, currentUser: any): Promise<{
         success: boolean;
         message: string;

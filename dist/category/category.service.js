@@ -104,7 +104,7 @@ let CategoryService = class CategoryService {
         }
         const data = await this.categoryRepository.find({
             where,
-            select: { id: true, categoryName: true },
+            select: { id: true, categoryName: true, imageUrl: true },
             order: { categoryName: 'ASC' },
         });
         return { success: true, data };

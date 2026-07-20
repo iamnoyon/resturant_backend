@@ -36,6 +36,9 @@ let ProductController = class ProductController {
     dropdown(currentUser) {
         return this.productService.dropdown(currentUser);
     }
+    findByCategory(categoryId, currentUser) {
+        return this.productService.findByCategory(+categoryId, currentUser);
+    }
     findOne(id, currentUser) {
         return this.productService.findOne(+id, currentUser);
     }
@@ -73,6 +76,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductController.prototype, "dropdown", null);
+__decorate([
+    (0, common_1.Get)('by-category'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all active products of a category' }),
+    __param(0, (0, common_1.Query)('categoryId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "findByCategory", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

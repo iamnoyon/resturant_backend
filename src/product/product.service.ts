@@ -145,7 +145,27 @@ export class ProductService {
 
     const data = await this.productRepository.find({
       where,
-      select: { id: true, productName: true, soldPrice: true, stock: true },
+      select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true },
+      order: { productName: 'ASC' },
+    });
+
+    return { success: true, data };
+  }
+
+  async findByCategory(categoryId: number, currentUser: any) {
+    const where: any = { isActive: true, categoryId };
+    if (
+      currentUser.role === Role.SUPERADMIN ||
+      currentUser.role === Role.ADMIN
+    ) {
+      where.createdBy = currentUser.id;
+    } else if (currentUser.role === Role.CASHIER) {
+      where.businessId = currentUser.businessId;
+    }
+
+    const data = await this.productRepository.find({
+      where,
+      select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true },
       order: { productName: 'ASC' },
     });
 

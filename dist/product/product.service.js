@@ -122,7 +122,23 @@ let ProductService = class ProductService {
         }
         const data = await this.productRepository.find({
             where,
-            select: { id: true, productName: true, soldPrice: true, stock: true },
+            select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true },
+            order: { productName: 'ASC' },
+        });
+        return { success: true, data };
+    }
+    async findByCategory(categoryId, currentUser) {
+        const where = { isActive: true, categoryId };
+        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
+            currentUser.role === role_enum_1.Role.ADMIN) {
+            where.createdBy = currentUser.id;
+        }
+        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+            where.businessId = currentUser.businessId;
+        }
+        const data = await this.productRepository.find({
+            where,
+            select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true },
             order: { productName: 'ASC' },
         });
         return { success: true, data };
