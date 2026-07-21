@@ -163,11 +163,15 @@ export class ProductService {
       where.businessId = currentUser.businessId;
     }
 
-    const data = await this.productRepository.find({
+    const products = await this.productRepository.find({
       where,
-      select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true },
+      select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true, stockRequired: true },
       order: { productName: 'ASC' },
     });
+
+    const data = products.filter(
+      (p) => !p.stockRequired || (p.stockRequired && Number(p.stock) > 0),
+    );
 
     return { success: true, data };
   }

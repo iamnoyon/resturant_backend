@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Order = void 0;
+const openapi = require("@nestjs/swagger");
 const typeorm_1 = require("typeorm");
 const bill_status_enum_1 = require("../../common/enums/bill-status.enum");
 const business_entity_1 = require("../../business/entities/business.entity");
@@ -30,6 +31,9 @@ let Order = class Order {
     updatedBy;
     createdAt;
     updatedAt;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { id: { required: true, type: () => Number }, orderId: { required: true, type: () => String }, tableId: { required: true, type: () => Number }, table: { required: true, type: () => require("../../table/entities/table.entity").Table }, products: { required: true, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: true, type: () => Number }, discount: { required: true, type: () => Number }, subTotal: { required: true, type: () => Number }, billStatus: { required: true, enum: require("../../common/enums/bill-status.enum").BillStatus }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+    }
 };
 exports.Order = Order;
 __decorate([

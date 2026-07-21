@@ -25,6 +25,7 @@ export declare class ProductService {
             soldPrice: number;
             stock: number;
             isActive: boolean;
+            stockRequired: boolean;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
             createdBy: number;

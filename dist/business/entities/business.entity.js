@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Business = void 0;
+const openapi = require("@nestjs/swagger");
 const typeorm_1 = require("typeorm");
 let Business = class Business {
     id;
@@ -22,6 +23,9 @@ let Business = class Business {
     area;
     createdAt;
     updatedAt;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { id: { required: true, type: () => Number }, adminId: { required: true, type: () => Number }, businessName: { required: true, type: () => String }, businessLogo: { required: true, type: () => String }, division: { required: true, type: () => String }, district: { required: true, type: () => String }, thana: { required: true, type: () => String }, area: { required: true, type: () => String }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+    }
 };
 exports.Business = Business;
 __decorate([

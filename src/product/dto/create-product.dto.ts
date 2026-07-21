@@ -27,4 +27,10 @@ export class CreateProductDto {
     description: 'Product image URL',
   })
   imageUrl?: string;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Whether stock adjustment is required for this product',
+  })
+  stockRequired?: boolean;
 }

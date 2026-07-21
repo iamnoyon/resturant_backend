@@ -10,10 +10,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateExpenseDto = void 0;
+const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
 class CreateExpenseDto {
     expenseName;
     expenseValue;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { expenseName: { required: true, type: () => String }, expenseValue: { required: true, type: () => Number } };
+    }
 }
 exports.CreateExpenseDto = CreateExpenseDto;
 __decorate([

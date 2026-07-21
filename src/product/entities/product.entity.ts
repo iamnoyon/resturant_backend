@@ -43,6 +43,9 @@ export class Product {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  stockRequired: boolean;
+
   @Column({ nullable: true })
   businessId: number;
 

@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateProductDto = void 0;
+const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
 class CreateProductDto {
     productName;
@@ -19,6 +20,10 @@ class CreateProductDto {
     soldPrice;
     stock;
     imageUrl;
+    stockRequired;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { productName: { required: true, type: () => String }, categoryId: { required: true, type: () => Number }, description: { required: false, type: () => String }, costPrice: { required: true, type: () => Number }, soldPrice: { required: true, type: () => Number }, stock: { required: false, type: () => Number }, imageUrl: { required: false, type: () => String }, stockRequired: { required: false, type: () => Boolean } };
+    }
 }
 exports.CreateProductDto = CreateProductDto;
 __decorate([
@@ -55,4 +60,11 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateProductDto.prototype, "imageUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: false,
+        description: 'Whether stock adjustment is required for this product',
+    }),
+    __metadata("design:type", Boolean)
+], CreateProductDto.prototype, "stockRequired", void 0);
 //# sourceMappingURL=create-product.dto.js.map

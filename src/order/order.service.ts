@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -47,7 +48,7 @@ export class OrderService {
     for (const item of createOrderDto.products) {
       if (item.quantity > 0) {
         const product = await this.productRepository.findOne({ where: { id: item.productId } });
-        if (product) {
+        if (product && product.stockRequired) {
           product.stock = Math.max(0, Number(product.stock) - item.quantity);
           await this.productRepository.save(product);
         }
@@ -156,6 +157,21 @@ export class OrderService {
     ) {
       throw new ForbiddenException('Access denied');
     }
+    if (order.billStatus === BillStatus.PAID) {
+      throw new BadRequestException('Cannot delete a paid order');
+    }
+    if (order.products && order.products.length > 0) {
+      for (const item of order.products) {
+        if (item.quantity > 0) {
+          const product = await this.productRepository.findOne({ where: { id: item.productId } });
+          if (product && product.stockRequired) {
+            product.stock = Number(product.stock) + item.quantity;
+            await this.productRepository.save(product);
+          }
+        }
+      }
+    }
+
     await this.orderRepository.remove(order);
     return { success: true, message: 'Order removed' };
   }

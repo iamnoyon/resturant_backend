@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Product = void 0;
+const openapi = require("@nestjs/swagger");
 const typeorm_1 = require("typeorm");
 const business_entity_1 = require("../../business/entities/business.entity");
 const category_entity_1 = require("../../category/entities/category.entity");
@@ -24,12 +25,16 @@ let Product = class Product {
     soldPrice;
     stock;
     isActive;
+    stockRequired;
     businessId;
     business;
     createdBy;
     updatedBy;
     createdAt;
     updatedAt;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { id: { required: true, type: () => Number }, productName: { required: true, type: () => String }, categoryId: { required: true, type: () => Number }, category: { required: true, type: () => require("../../category/entities/category.entity").Category }, description: { required: true, type: () => String }, imageUrl: { required: true, type: () => String }, costPrice: { required: true, type: () => Number }, soldPrice: { required: true, type: () => Number }, stock: { required: true, type: () => Number }, isActive: { required: true, type: () => Boolean }, stockRequired: { required: true, type: () => Boolean }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+    }
 };
 exports.Product = Product;
 __decorate([
@@ -73,6 +78,10 @@ __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], Product.prototype, "isActive", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], Product.prototype, "stockRequired", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", Number)

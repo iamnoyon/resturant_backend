@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateOrderDto = void 0;
+const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const bill_status_enum_1 = require("../../common/enums/bill-status.enum");
@@ -20,6 +21,9 @@ class UpdateOrderDto {
     discount;
     subTotal;
     billStatus;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { tableId: { required: false, type: () => Number }, products: { required: false, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: false, type: () => Number }, discount: { required: false, type: () => Number }, subTotal: { required: false, type: () => Number }, billStatus: { required: false, enum: require("../../common/enums/bill-status.enum").BillStatus } };
+    }
 }
 exports.UpdateOrderDto = UpdateOrderDto;
 __decorate([

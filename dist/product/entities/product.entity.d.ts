@@ -11,6 +11,7 @@ export declare class Product {
     soldPrice: number;
     stock: number;
     isActive: boolean;
+    stockRequired: boolean;
     businessId: number;
     business: Business;
     createdBy: number;

@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaginationQueryDto = void 0;
+const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
 class PaginationQueryDto {
     page;
@@ -18,6 +19,9 @@ class PaginationQueryDto {
     categoryId;
     sortBy;
     sortOrder;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { page: { required: false, type: () => Number }, limit: { required: false, type: () => Number }, search: { required: false, type: () => String }, categoryId: { required: false, type: () => Number }, sortBy: { required: false, type: () => String }, sortOrder: { required: false, enum: ["DESC", "ASC"] } };
+    }
 }
 exports.PaginationQueryDto = PaginationQueryDto;
 __decorate([

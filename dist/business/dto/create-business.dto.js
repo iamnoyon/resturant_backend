@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateBusinessDto = void 0;
+const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
 class CreateBusinessDto {
     businessName;
@@ -18,6 +19,9 @@ class CreateBusinessDto {
     district;
     thana;
     area;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { businessName: { required: true, type: () => String }, businessLogo: { required: false, type: () => String }, division: { required: false, type: () => String }, district: { required: false, type: () => String }, thana: { required: false, type: () => String }, area: { required: false, type: () => String } };
+    }
 }
 exports.CreateBusinessDto = CreateBusinessDto;
 __decorate([

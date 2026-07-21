@@ -10,11 +10,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateProductDto = void 0;
+const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
 const swagger_2 = require("@nestjs/swagger");
 const create_product_dto_1 = require("./create-product.dto");
 class UpdateProductDto extends (0, swagger_1.PartialType)(create_product_dto_1.CreateProductDto) {
     isActive;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { isActive: { required: false, type: () => Boolean } };
+    }
 }
 exports.UpdateProductDto = UpdateProductDto;
 __decorate([

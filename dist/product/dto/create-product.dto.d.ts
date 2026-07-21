@@ -6,4 +6,5 @@ export declare class CreateProductDto {
     soldPrice: number;
     stock?: number;
     imageUrl?: string;
+    stockRequired?: boolean;
 }

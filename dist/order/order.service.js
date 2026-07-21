@@ -19,6 +19,7 @@ const typeorm_2 = require("typeorm");
 const order_entity_1 = require("./entities/order.entity");
 const product_entity_1 = require("../product/entities/product.entity");
 const role_enum_1 = require("../common/enums/role.enum");
+const bill_status_enum_1 = require("../common/enums/bill-status.enum");
 let OrderService = class OrderService {
     orderRepository;
     productRepository;
@@ -45,7 +46,7 @@ let OrderService = class OrderService {
         for (const item of createOrderDto.products) {
             if (item.quantity > 0) {
                 const product = await this.productRepository.findOne({ where: { id: item.productId } });
-                if (product) {
+                if (product && product.stockRequired) {
                     product.stock = Math.max(0, Number(product.stock) - item.quantity);
                     await this.productRepository.save(product);
                 }
@@ -131,6 +132,20 @@ let OrderService = class OrderService {
         if (currentUser.role === role_enum_1.Role.CASHIER &&
             order.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
+        }
+        if (order.billStatus === bill_status_enum_1.BillStatus.PAID) {
+            throw new common_1.BadRequestException('Cannot delete a paid order');
+        }
+        if (order.products && order.products.length > 0) {
+            for (const item of order.products) {
+                if (item.quantity > 0) {
+                    const product = await this.productRepository.findOne({ where: { id: item.productId } });
+                    if (product && product.stockRequired) {
+                        product.stock = Number(product.stock) + item.quantity;
+                        await this.productRepository.save(product);
+                    }
+                }
+            }
         }
         await this.orderRepository.remove(order);
         return { success: true, message: 'Order removed' };
