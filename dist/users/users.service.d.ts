@@ -18,6 +18,7 @@ export declare class UsersService {
             phone: string;
             role: Role;
             status: UserStatus;
+            profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
             createdBy: number;
@@ -41,6 +42,7 @@ export declare class UsersService {
             phone: string;
             role: Role;
             status: UserStatus;
+            profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
             createdBy: number;
@@ -52,23 +54,5 @@ export declare class UsersService {
     remove(id: number, currentUser: any): Promise<{
         success: boolean;
         message: string;
-    }>;
-    toggleStatus(id: number, currentUser: any): Promise<{
-        success: boolean;
-        message: string;
-        data: {
-            id: number;
-            name: string;
-            email: string;
-            phone: string;
-            role: Role;
-            status: UserStatus;
-            businessId: number;
-            business: import("../business/entities/business.entity").Business;
-            createdBy: number;
-            updatedBy: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
     }>;
 }

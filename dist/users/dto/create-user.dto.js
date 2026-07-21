@@ -19,8 +19,9 @@ class CreateUserDto {
     password;
     role;
     businessId;
+    profileImageUrl;
     static _OPENAPI_METADATA_FACTORY() {
-        return { name: { required: true, type: () => String }, email: { required: true, type: () => String }, phone: { required: false, type: () => String }, password: { required: true, type: () => String }, role: { required: true, type: () => String }, businessId: { required: false, type: () => Number } };
+        return { name: { required: true, type: () => String }, email: { required: true, type: () => String }, phone: { required: false, type: () => String }, password: { required: true, type: () => String }, role: { required: true, type: () => String }, businessId: { required: false, type: () => Number }, profileImageUrl: { required: false, type: () => String } };
     }
 }
 exports.CreateUserDto = CreateUserDto;
@@ -50,7 +51,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'cashier',
         description: 'User role',
-        enum: ['admin', 'cashier'],
+        enum: ['admin', 'cashier', 'waiter'],
     }),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "role", void 0);
@@ -61,4 +62,11 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], CreateUserDto.prototype, "businessId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'https://example.com/profile.jpg',
+        description: 'Profile image URL',
+    }),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "profileImageUrl", void 0);
 //# sourceMappingURL=create-user.dto.js.map

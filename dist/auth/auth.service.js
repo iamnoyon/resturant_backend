@@ -100,11 +100,42 @@ let AuthService = class AuthService {
             name: user.name,
             email: user.email,
             phone: user.phone,
+            profileImageUrl: user.profileImageUrl,
             role: user.role,
             status: user.status,
             businessId: user.businessId,
             business: user.business,
         };
+    }
+    async updateProfile(userId, dto) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (dto.email && dto.email !== user.email) {
+            const existing = await this.userRepository.findOne({ where: { email: dto.email } });
+            if (existing)
+                throw new common_1.ConflictException('Email already exists');
+        }
+        if (dto.name !== undefined)
+            user.name = dto.name;
+        if (dto.email !== undefined)
+            user.email = dto.email;
+        if (dto.profileImageUrl !== undefined)
+            user.profileImageUrl = dto.profileImageUrl;
+        const saved = await this.userRepository.save(user);
+        const { password, ...result } = saved;
+        return { success: true, message: 'Profile updated', data: result };
+    }
+    async updatePassword(userId, oldPassword, newPassword) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch)
+            throw new common_1.BadRequestException('Old password is incorrect');
+        user.password = await bcrypt.hash(newPassword, 10);
+        await this.userRepository.save(user);
+        return { success: true, message: 'Password updated successfully' };
     }
 };
 exports.AuthService = AuthService;

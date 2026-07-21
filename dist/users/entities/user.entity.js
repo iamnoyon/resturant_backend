@@ -23,6 +23,7 @@ let User = class User {
     password;
     role;
     status;
+    profileImageUrl;
     businessId;
     business;
     createdBy;
@@ -30,7 +31,7 @@ let User = class User {
     createdAt;
     updatedAt;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => Number }, name: { required: true, type: () => String }, email: { required: true, type: () => String }, phone: { required: true, type: () => String }, password: { required: true, type: () => String }, role: { required: true, enum: require("../../common/enums/role.enum").Role }, status: { required: true, enum: require("../../common/enums/user-status.enum").UserStatus }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+        return { id: { required: true, type: () => Number }, name: { required: true, type: () => String }, email: { required: true, type: () => String }, phone: { required: true, type: () => String }, password: { required: true, type: () => String }, role: { required: true, enum: require("../../common/enums/role.enum").Role }, status: { required: true, enum: require("../../common/enums/user-status.enum").UserStatus }, profileImageUrl: { required: true, type: () => String }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
     }
 };
 exports.User = User;
@@ -62,6 +63,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'enum', enum: user_status_enum_1.UserStatus, default: user_status_enum_1.UserStatus.ACTIVE }),
     __metadata("design:type", String)
 ], User.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "profileImageUrl", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", Number)

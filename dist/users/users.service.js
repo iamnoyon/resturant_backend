@@ -62,12 +62,18 @@ let UsersService = class UsersService {
         if (createUserDto.role === role_enum_1.Role.SUPERADMIN) {
             throw new common_1.BadRequestException('Cannot create superadmin');
         }
-        if (currentUser.role === role_enum_1.Role.ADMIN &&
-            createUserDto.role !== role_enum_1.Role.CASHIER) {
-            throw new common_1.ForbiddenException('Admin can only create cashier accounts');
+        if (currentUser.role === role_enum_1.Role.SUPERADMIN) {
+            if (createUserDto.role !== role_enum_1.Role.ADMIN) {
+                throw new common_1.ForbiddenException('Superadmin can only create admin accounts');
+            }
         }
-        if (currentUser.role === role_enum_1.Role.CASHIER) {
-            throw new common_1.ForbiddenException('Cashier cannot create users');
+        else if (currentUser.role === role_enum_1.Role.ADMIN) {
+            if (createUserDto.role !== role_enum_1.Role.CASHIER && createUserDto.role !== role_enum_1.Role.WAITER) {
+                throw new common_1.ForbiddenException('Admin can only create cashier and waiter accounts');
+            }
+        }
+        else {
+            throw new common_1.ForbiddenException('You are not authorized to create users');
         }
         const existingUser = await this.userRepository.findOne({
             where: { email: createUserDto.email },
@@ -80,6 +86,7 @@ let UsersService = class UsersService {
             name: createUserDto.name,
             email: createUserDto.email,
             phone: createUserDto.phone || null,
+            profileImageUrl: createUserDto.profileImageUrl || null,
             password: hashedPassword,
             role: createUserDto.role,
             businessId: createUserDto.businessId || currentUser.businessId,
@@ -120,6 +127,7 @@ let UsersService = class UsersService {
                 name: true,
                 email: true,
                 phone: true,
+                profileImageUrl: true,
                 role: true,
                 status: true,
                 businessId: true,
@@ -141,6 +149,7 @@ let UsersService = class UsersService {
                 name: true,
                 email: true,
                 phone: true,
+                profileImageUrl: true,
                 role: true,
                 status: true,
                 businessId: true,
@@ -177,10 +186,8 @@ let UsersService = class UsersService {
             if (user.id !== currentUser.id)
                 throw new common_1.ForbiddenException('Access denied');
         }
-        if (updateUserDto.password) {
-            updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
-        }
         delete updateUserDto.role;
+        delete updateUserDto.password;
         user.updatedBy = currentUser.id;
         if (updateUserDto.name !== undefined)
             user.name = updateUserDto.name;
@@ -188,8 +195,8 @@ let UsersService = class UsersService {
             user.email = updateUserDto.email;
         if (updateUserDto.phone !== undefined)
             user.phone = updateUserDto.phone;
-        if (updateUserDto.password !== undefined)
-            user.password = updateUserDto.password;
+        if (updateUserDto.profileImageUrl !== undefined)
+            user.profileImageUrl = updateUserDto.profileImageUrl;
         if (updateUserDto.status !== undefined)
             user.status = updateUserDto.status;
         const saved = await this.userRepository.save(user);
@@ -216,29 +223,6 @@ let UsersService = class UsersService {
         }
         await this.userRepository.softRemove(user);
         return { success: true, message: 'User removed successfully' };
-    }
-    async toggleStatus(id, currentUser) {
-        const user = await this.userRepository.findOne({ where: { id } });
-        if (!user)
-            throw new common_1.NotFoundException('User not found');
-        if (user.role === role_enum_1.Role.SUPERADMIN)
-            throw new common_1.BadRequestException('Cannot change superadmin status');
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
-            if (user.createdBy !== currentUser.id)
-                throw new common_1.ForbiddenException('Access denied');
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        user.status =
-            user.status === user_status_enum_1.UserStatus.ACTIVE
-                ? user_status_enum_1.UserStatus.INACTIVE
-                : user_status_enum_1.UserStatus.ACTIVE;
-        user.updatedBy = currentUser.id;
-        const saved = await this.userRepository.save(user);
-        const { password, ...result } = saved;
-        return { success: true, message: `User ${result.status}`, data: result };
     }
 };
 exports.UsersService = UsersService;

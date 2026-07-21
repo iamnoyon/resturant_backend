@@ -45,9 +45,6 @@ let UsersController = class UsersController {
     remove(id, currentUser) {
         return this.usersService.remove(+id, currentUser);
     }
-    toggleStatus(id, currentUser) {
-        return this.usersService.toggleStatus(+id, currentUser);
-    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -98,16 +95,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
-__decorate([
-    (0, common_1.Patch)(':id/toggle-status'),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPERADMIN, role_enum_1.Role.ADMIN),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], UsersController.prototype, "toggleStatus", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, swagger_1.ApiBearerAuth)(),

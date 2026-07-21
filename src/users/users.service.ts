@@ -29,14 +29,16 @@ export class UsersService {
     if (createUserDto.role === Role.SUPERADMIN) {
       throw new BadRequestException('Cannot create superadmin');
     }
-    if (
-      currentUser.role === Role.ADMIN &&
-      createUserDto.role !== Role.CASHIER
-    ) {
-      throw new ForbiddenException('Admin can only create cashier accounts');
-    }
-    if (currentUser.role === Role.CASHIER) {
-      throw new ForbiddenException('Cashier cannot create users');
+    if (currentUser.role === Role.SUPERADMIN) {
+      if (createUserDto.role !== Role.ADMIN) {
+        throw new ForbiddenException('Superadmin can only create admin accounts');
+      }
+    } else if (currentUser.role === Role.ADMIN) {
+      if (createUserDto.role !== Role.CASHIER && createUserDto.role !== Role.WAITER) {
+        throw new ForbiddenException('Admin can only create cashier and waiter accounts');
+      }
+    } else {
+      throw new ForbiddenException('You are not authorized to create users');
     }
 
     const existingUser = await this.userRepository.findOne({
@@ -51,6 +53,7 @@ export class UsersService {
       name: createUserDto.name,
       email: createUserDto.email,
       phone: createUserDto.phone || null,
+      profileImageUrl: createUserDto.profileImageUrl || null,
       password: hashedPassword,
       role: createUserDto.role as Role,
       businessId: createUserDto.businessId || currentUser.businessId,
@@ -101,6 +104,7 @@ export class UsersService {
         name: true,
         email: true,
         phone: true,
+        profileImageUrl: true,
         role: true,
         status: true,
         businessId: true,
@@ -124,6 +128,7 @@ export class UsersService {
         name: true,
         email: true,
         phone: true,
+        profileImageUrl: true,
         role: true,
         status: true,
         businessId: true,
@@ -161,13 +166,8 @@ export class UsersService {
       if (user.id !== currentUser.id)
         throw new ForbiddenException('Access denied');
     }
-    if ((updateUserDto as any).password) {
-      (updateUserDto as any).password = await bcrypt.hash(
-        (updateUserDto as any).password,
-        10,
-      );
-    }
     delete (updateUserDto as any).role;
+    delete (updateUserDto as any).password;
     user.updatedBy = currentUser.id;
     if ((updateUserDto as any).name !== undefined)
       user.name = (updateUserDto as any).name;
@@ -175,8 +175,8 @@ export class UsersService {
       user.email = (updateUserDto as any).email;
     if ((updateUserDto as any).phone !== undefined)
       user.phone = (updateUserDto as any).phone;
-    if ((updateUserDto as any).password !== undefined)
-      user.password = (updateUserDto as any).password;
+    if ((updateUserDto as any).profileImageUrl !== undefined)
+      user.profileImageUrl = (updateUserDto as any).profileImageUrl;
     if ((updateUserDto as any).status !== undefined)
       user.status = (updateUserDto as any).status;
     const saved = await this.userRepository.save(user);
@@ -204,29 +204,5 @@ export class UsersService {
     }
     await this.userRepository.softRemove(user);
     return { success: true, message: 'User removed successfully' };
-  }
-
-  async toggleStatus(id: number, currentUser: any) {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new NotFoundException('User not found');
-    if (user.role === Role.SUPERADMIN)
-      throw new BadRequestException('Cannot change superadmin status');
-    if (
-      currentUser.role === Role.SUPERADMIN ||
-      currentUser.role === Role.ADMIN
-    ) {
-      if (user.createdBy !== currentUser.id)
-        throw new ForbiddenException('Access denied');
-    } else if (currentUser.role === Role.CASHIER) {
-      throw new ForbiddenException('Access denied');
-    }
-    user.status =
-      user.status === UserStatus.ACTIVE
-        ? UserStatus.INACTIVE
-        : UserStatus.ACTIVE;
-    user.updatedBy = currentUser.id;
-    const saved = await this.userRepository.save(user);
-    const { password, ...result } = saved;
-    return { success: true, message: `User ${result.status}`, data: result };
   }
 }

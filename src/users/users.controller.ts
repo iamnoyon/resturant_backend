@@ -60,10 +60,4 @@ export class UsersController {
   remove(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.usersService.remove(+id, currentUser);
   }
-
-  @Patch(':id/toggle-status')
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
-  toggleStatus(@Param('id') id: string, @CurrentUser() currentUser: any) {
-    return this.usersService.toggleStatus(+id, currentUser);
-  }
 }

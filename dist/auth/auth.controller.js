@@ -18,6 +18,8 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
+const update_profile_dto_1 = require("./dto/update-profile.dto");
+const update_password_dto_1 = require("./dto/update-password.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 let AuthController = class AuthController {
@@ -44,6 +46,12 @@ let AuthController = class AuthController {
         const profile = await this.authService.getProfile(currentUser.id);
         return { success: true, data: profile };
     }
+    updateProfile(dto, currentUser) {
+        return this.authService.updateProfile(currentUser.id, dto);
+    }
+    updatePassword(dto, currentUser) {
+        return this.authService.updatePassword(currentUser.id, dto.oldPassword, dto.newPassword);
+    }
     async logout(response) {
         response.clearCookie('access_token', { path: '/' });
         return { success: true, message: 'Logged out successfully' };
@@ -69,6 +77,30 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Patch)('profile'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Update own profile (name, email, profile image)' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [update_profile_dto_1.UpdateProfileDto, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Patch)('password'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Update own password' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [update_password_dto_1.UpdatePasswordDto, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "updatePassword", null);
 __decorate([
     (0, common_1.Post)('logout'),
     openapi.ApiResponse({ status: 201 }),

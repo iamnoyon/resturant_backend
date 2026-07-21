@@ -35,6 +35,9 @@ export class User {
   status: UserStatus;
 
   @Column({ nullable: true })
+  profileImageUrl: string;
+
+  @Column({ nullable: true })
   businessId: number;
 
   @ManyToOne(() => Business, { nullable: true })

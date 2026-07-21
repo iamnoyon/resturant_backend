@@ -16,6 +16,7 @@ export declare class UsersController {
             phone: string;
             role: Role;
             status: import("../common/enums/user-status.enum").UserStatus;
+            profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
             createdBy: number;
@@ -39,6 +40,7 @@ export declare class UsersController {
             phone: string;
             role: Role;
             status: import("../common/enums/user-status.enum").UserStatus;
+            profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
             createdBy: number;
@@ -50,23 +52,5 @@ export declare class UsersController {
     remove(id: string, currentUser: any): Promise<{
         success: boolean;
         message: string;
-    }>;
-    toggleStatus(id: string, currentUser: any): Promise<{
-        success: boolean;
-        message: string;
-        data: {
-            id: number;
-            name: string;
-            email: string;
-            phone: string;
-            role: Role;
-            status: import("../common/enums/user-status.enum").UserStatus;
-            businessId: number;
-            business: import("../business/entities/business.entity").Business;
-            createdBy: number;
-            updatedBy: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
     }>;
 }

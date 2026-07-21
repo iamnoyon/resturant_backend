@@ -9,6 +9,7 @@ export declare class User {
     password: string;
     role: Role;
     status: UserStatus;
+    profileImageUrl: string;
     businessId: number;
     business: Business;
     createdBy: number;

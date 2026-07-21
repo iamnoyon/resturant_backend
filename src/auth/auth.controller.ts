@@ -1,8 +1,10 @@
-import { Controller, Post, Get, Body, UseGuards, Res } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Post, Get, Patch, Body, UseGuards, Res } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -39,6 +41,32 @@ export class AuthController {
   async getProfile(@CurrentUser() currentUser: any) {
     const profile = await this.authService.getProfile(currentUser.id);
     return { success: true, data: profile };
+  }
+
+  @Patch('profile')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update own profile (name, email, profile image)' })
+  @UseGuards(JwtAuthGuard)
+  updateProfile(
+    @Body() dto: UpdateProfileDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.authService.updateProfile(currentUser.id, dto);
+  }
+
+  @Patch('password')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update own password' })
+  @UseGuards(JwtAuthGuard)
+  updatePassword(
+    @Body() dto: UpdatePasswordDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.authService.updatePassword(
+      currentUser.id,
+      dto.oldPassword,
+      dto.newPassword,
+    );
   }
 
   @Post('logout')

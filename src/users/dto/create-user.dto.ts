@@ -22,7 +22,7 @@ export class CreateUserDto {
   @ApiProperty({
     example: 'cashier',
     description: 'User role',
-    enum: ['admin', 'cashier'],
+    enum: ['admin', 'cashier', 'waiter'],
   })
   role: string;
 
@@ -31,4 +31,10 @@ export class CreateUserDto {
     description: 'Business ID (auto-set by system)',
   })
   businessId?: number;
+
+  @ApiPropertyOptional({
+    example: 'https://example.com/profile.jpg',
+    description: 'Profile image URL',
+  })
+  profileImageUrl?: string;
 }
