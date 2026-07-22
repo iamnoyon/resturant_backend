@@ -20,7 +20,8 @@ const expense_service_1 = require("./expense.service");
 const create_expense_dto_1 = require("./dto/create-expense.dto");
 const update_expense_dto_1 = require("./dto/update-expense.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
-const roles_guard_1 = require("../common/guards/roles.guard");
+const permissions_guard_1 = require("../common/guards/permissions.guard");
+const require_permissions_decorator_1 = require("../common/decorators/require-permissions.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const pagination_dto_1 = require("../common/dto/pagination.dto");
 let ExpenseController = class ExpenseController {
@@ -47,6 +48,7 @@ let ExpenseController = class ExpenseController {
 exports.ExpenseController = ExpenseController;
 __decorate([
     (0, common_1.Post)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('expense:create'),
     openapi.ApiResponse({ status: 201 }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -56,6 +58,7 @@ __decorate([
 ], ExpenseController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('expense:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -65,6 +68,7 @@ __decorate([
 ], ExpenseController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('expense:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -74,6 +78,7 @@ __decorate([
 ], ExpenseController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('expense:update'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -84,6 +89,7 @@ __decorate([
 ], ExpenseController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('expense:delete'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -95,7 +101,7 @@ exports.ExpenseController = ExpenseController = __decorate([
     (0, swagger_1.ApiTags)('Expenses'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('expenses'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     __metadata("design:paramtypes", [expense_service_1.ExpenseService])
 ], ExpenseController);
 //# sourceMappingURL=expense.controller.js.map

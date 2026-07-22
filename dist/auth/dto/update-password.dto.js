@@ -25,7 +25,10 @@ __decorate([
     __metadata("design:type", String)
 ], UpdatePasswordDto.prototype, "oldPassword", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'NewPass@123', description: 'New password (min 6 chars)' }),
+    (0, swagger_1.ApiProperty)({
+        example: 'NewPass@123',
+        description: 'New password (min 6 chars)',
+    }),
     __metadata("design:type", String)
 ], UpdatePasswordDto.prototype, "newPassword", void 0);
 //# sourceMappingURL=update-password.dto.js.map

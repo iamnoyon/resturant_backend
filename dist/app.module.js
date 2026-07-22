@@ -20,6 +20,7 @@ const order_module_1 = require("./order/order.module");
 const expense_module_1 = require("./expense/expense.module");
 const seed_module_1 = require("./seed/seed.module");
 const upload_module_1 = require("./upload/upload.module");
+const permissions_module_1 = require("./permissions/permissions.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -54,6 +55,7 @@ exports.AppModule = AppModule = __decorate([
             expense_module_1.ExpenseModule,
             seed_module_1.SeedModule,
             upload_module_1.UploadModule,
+            permissions_module_1.PermissionsModule,
         ],
     })
 ], AppModule);

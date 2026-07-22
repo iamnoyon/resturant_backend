@@ -11,6 +11,7 @@ import { OrderModule } from './order/order.module';
 import { ExpenseModule } from './expense/expense.module';
 import { SeedModule } from './seed/seed.module';
 import { UploadModule } from './upload/upload.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UploadModule } from './upload/upload.module';
     ExpenseModule,
     SeedModule,
     UploadModule,
+    PermissionsModule,
   ],
 })
 export class AppModule {}

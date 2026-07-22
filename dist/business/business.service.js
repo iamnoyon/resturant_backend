@@ -38,8 +38,7 @@ let BusinessService = class BusinessService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             where.adminId = currentUser.id;
         }
         if (query.search) {

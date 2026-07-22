@@ -13,22 +13,21 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
-import { Roles } from '../common/decorators/roles.decorator';
+import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Role } from '../common/enums/role.enum';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Business')
 @ApiBearerAuth()
 @Controller('business')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
   @Post()
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @RequirePermissions('business:create')
   create(
     @Body() createBusinessDto: CreateBusinessDto,
     @CurrentUser() currentUser: any,
@@ -37,17 +36,19 @@ export class BusinessController {
   }
 
   @Get()
+  @RequirePermissions('business:read')
   findAll(@Query() query: PaginationQueryDto, @CurrentUser() currentUser: any) {
     return this.businessService.findAll(query, currentUser);
   }
 
   @Get(':id')
+  @RequirePermissions('business:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.businessService.findOne(+id, currentUser);
   }
 
   @Patch(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @RequirePermissions('business:update')
   update(
     @Param('id') id: string,
     @Body() updateBusinessDto: UpdateBusinessDto,
@@ -57,7 +58,7 @@ export class BusinessController {
   }
 
   @Delete(':id')
-  @Roles(Role.SUPERADMIN)
+  @RequirePermissions('business:delete')
   remove(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.businessService.remove(+id, currentUser);
   }

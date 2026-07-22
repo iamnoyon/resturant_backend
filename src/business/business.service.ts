@@ -42,7 +42,6 @@ export class BusinessService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.adminId = currentUser.id;

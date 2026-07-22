@@ -39,8 +39,7 @@ let TableService = class TableService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             where.createdBy = currentUser.id;
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
@@ -65,8 +64,7 @@ let TableService = class TableService {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             table.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -80,8 +78,7 @@ let TableService = class TableService {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             table.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -95,8 +92,7 @@ let TableService = class TableService {
     }
     async dropdown(currentUser) {
         const where = { isActive: true };
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             where.createdBy = currentUser.id;
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
@@ -113,8 +109,7 @@ let TableService = class TableService {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             table.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }

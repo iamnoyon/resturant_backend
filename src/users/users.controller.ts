@@ -13,22 +13,21 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Roles } from '../common/decorators/roles.decorator';
+import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Role } from '../common/enums/role.enum';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @RequirePermissions('user:create')
   create(
     @Body() createUserDto: CreateUserDto,
     @CurrentUser() currentUser: any,
@@ -37,16 +36,19 @@ export class UsersController {
   }
 
   @Get()
+  @RequirePermissions('user:read')
   findAll(@Query() query: PaginationQueryDto, @CurrentUser() currentUser: any) {
     return this.usersService.findAll(query, currentUser);
   }
 
   @Get(':id')
+  @RequirePermissions('user:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.usersService.findOne(+id, currentUser);
   }
 
   @Patch(':id')
+  @RequirePermissions('user:update')
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -56,7 +58,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @RequirePermissions('user:delete')
   remove(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.usersService.remove(+id, currentUser);
   }

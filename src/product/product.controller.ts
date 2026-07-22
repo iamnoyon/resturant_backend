@@ -15,18 +15,20 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth()
 @Controller('products')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @RequirePermissions('product:create')
   create(
     @Body() createProductDto: CreateProductDto,
     @CurrentUser() currentUser: any,
@@ -35,29 +37,39 @@ export class ProductController {
   }
 
   @Get()
+  @RequirePermissions('product:read')
   findAll(@Query() query: PaginationQueryDto, @CurrentUser() currentUser: any) {
     return this.productService.findAll(query, currentUser);
   }
 
   @Get('dropdown')
+  @RequirePermissions('product:read')
   dropdown(@CurrentUser() currentUser: any) {
     return this.productService.dropdown(currentUser);
   }
 
   @Get('by-category')
   @ApiOperation({ summary: 'Get all active products of a category' })
-  findByCategory(@Query('categoryId') categoryId: string, @CurrentUser() currentUser: any) {
+  @RequirePermissions('product:read')
+  findByCategory(
+    @Query('categoryId') categoryId: string,
+    @CurrentUser() currentUser: any,
+  ) {
     return this.productService.findByCategory(+categoryId, currentUser);
   }
 
   @Get(':id')
+  @RequirePermissions('product:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.productService.findOne(+id, currentUser);
   }
 
   @Patch(':id/stock')
   @ApiOperation({ summary: 'Update product stock' })
-  @ApiBody({ schema: { properties: { stock: { type: 'number', example: 50 } } } })
+  @ApiBody({
+    schema: { properties: { stock: { type: 'number', example: 50 } } },
+  })
+  @RequirePermissions('product:update-stock')
   updateStock(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { stock: number },
@@ -67,6 +79,7 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @RequirePermissions('product:update')
   update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -76,6 +89,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @RequirePermissions('product:delete')
   remove(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.productService.remove(+id, currentUser);
   }

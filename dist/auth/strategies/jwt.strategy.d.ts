@@ -16,6 +16,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         role: import("../../common/enums/role.enum").Role;
         businessId: number;
         business: import("../../business/entities/business.entity").Business;
+        permissions: string[];
     }>;
 }
 export {};

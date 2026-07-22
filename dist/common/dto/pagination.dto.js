@@ -20,7 +20,7 @@ class PaginationQueryDto {
     sortBy;
     sortOrder;
     static _OPENAPI_METADATA_FACTORY() {
-        return { page: { required: false, type: () => Number }, limit: { required: false, type: () => Number }, search: { required: false, type: () => String }, categoryId: { required: false, type: () => Number }, sortBy: { required: false, type: () => String }, sortOrder: { required: false, enum: ["DESC", "ASC"] } };
+        return { page: { required: false, type: () => Number }, limit: { required: false, type: () => Number }, search: { required: false, type: () => String }, categoryId: { required: false, type: () => Number }, sortBy: { required: false, type: () => String }, sortOrder: { required: false, enum: ["ASC", "DESC"] } };
     }
 }
 exports.PaginationQueryDto = PaginationQueryDto;

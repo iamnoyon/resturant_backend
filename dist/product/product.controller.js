@@ -20,7 +20,8 @@ const product_service_1 = require("./product.service");
 const create_product_dto_1 = require("./dto/create-product.dto");
 const update_product_dto_1 = require("./dto/update-product.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
-const roles_guard_1 = require("../common/guards/roles.guard");
+const permissions_guard_1 = require("../common/guards/permissions.guard");
+const require_permissions_decorator_1 = require("../common/decorators/require-permissions.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const pagination_dto_1 = require("../common/dto/pagination.dto");
 let ProductController = class ProductController {
@@ -56,6 +57,7 @@ let ProductController = class ProductController {
 exports.ProductController = ProductController;
 __decorate([
     (0, common_1.Post)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:create'),
     openapi.ApiResponse({ status: 201 }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -65,6 +67,7 @@ __decorate([
 ], ProductController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -74,6 +77,7 @@ __decorate([
 ], ProductController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('dropdown'),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
@@ -83,6 +87,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('by-category'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all active products of a category' }),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Query)('categoryId')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -92,6 +97,7 @@ __decorate([
 ], ProductController.prototype, "findByCategory", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -102,7 +108,10 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id/stock'),
     (0, swagger_1.ApiOperation)({ summary: 'Update product stock' }),
-    (0, swagger_1.ApiBody)({ schema: { properties: { stock: { type: 'number', example: 50 } } } }),
+    (0, swagger_1.ApiBody)({
+        schema: { properties: { stock: { type: 'number', example: 50 } } },
+    }),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:update-stock'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)()),
@@ -113,6 +122,7 @@ __decorate([
 ], ProductController.prototype, "updateStock", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:update'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -123,6 +133,7 @@ __decorate([
 ], ProductController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('product:delete'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -134,7 +145,7 @@ exports.ProductController = ProductController = __decorate([
     (0, swagger_1.ApiTags)('Products'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('products'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     __metadata("design:paramtypes", [product_service_1.ProductService])
 ], ProductController);
 //# sourceMappingURL=product.controller.js.map

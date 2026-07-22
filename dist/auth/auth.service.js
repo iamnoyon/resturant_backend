@@ -52,12 +52,16 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = __importStar(require("bcrypt"));
 const user_entity_1 = require("../users/entities/user.entity");
+const permission_entity_1 = require("../permissions/entities/permission.entity");
 const user_status_enum_1 = require("../common/enums/user-status.enum");
+const role_enum_1 = require("../common/enums/role.enum");
 let AuthService = class AuthService {
     userRepository;
+    permissionRepository;
     jwtService;
-    constructor(userRepository, jwtService) {
+    constructor(userRepository, permissionRepository, jwtService) {
         this.userRepository = userRepository;
+        this.permissionRepository = permissionRepository;
         this.jwtService = jwtService;
     }
     async login(loginDto) {
@@ -95,7 +99,7 @@ let AuthService = class AuthService {
         if (!user || user.status !== user_status_enum_1.UserStatus.ACTIVE) {
             throw new common_1.UnauthorizedException('Invalid token');
         }
-        return {
+        const result = {
             id: user.id,
             name: user.name,
             email: user.email,
@@ -105,14 +109,40 @@ let AuthService = class AuthService {
             status: user.status,
             businessId: user.businessId,
             business: user.business,
+            permissions: [],
         };
+        if (user.role === role_enum_1.Role.SUPERADMIN) {
+            const allPermissions = await this.permissionRepository.find({
+                order: { id: 'ASC' },
+            });
+            result.permissions = allPermissions.map((p) => ({
+                value: p.name,
+                name: p.description,
+            }));
+        }
+        else {
+            const permissionNames = user.permissions || [];
+            if (permissionNames.length > 0) {
+                const perms = await this.permissionRepository.find({
+                    where: { name: (0, typeorm_2.In)(permissionNames) },
+                    order: { id: 'ASC' },
+                });
+                result.permissions = perms.map((p) => ({
+                    value: p.name,
+                    name: p.description,
+                }));
+            }
+        }
+        return result;
     }
     async updateProfile(userId, dto) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user)
             throw new common_1.UnauthorizedException('User not found');
         if (dto.email && dto.email !== user.email) {
-            const existing = await this.userRepository.findOne({ where: { email: dto.email } });
+            const existing = await this.userRepository.findOne({
+                where: { email: dto.email },
+            });
             if (existing)
                 throw new common_1.ConflictException('Email already exists');
         }
@@ -142,7 +172,9 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(1, (0, typeorm_1.InjectRepository)(permission_entity_1.Permission)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

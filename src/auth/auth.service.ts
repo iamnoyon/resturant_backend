@@ -1,18 +1,27 @@
-import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
+import { Permission } from '../permissions/entities/permission.entity';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserStatus } from '../common/enums/user-status.enum';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Permission)
+    private permissionRepository: Repository<Permission>,
     private jwtService: JwtService,
   ) {}
 
@@ -66,7 +75,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
 
-    return {
+    const result: any = {
       id: user.id,
       name: user.name,
       email: user.email,
@@ -76,7 +85,32 @@ export class AuthService {
       status: user.status,
       businessId: user.businessId,
       business: user.business,
+      permissions: [],
     };
+
+    if (user.role === Role.SUPERADMIN) {
+      const allPermissions = await this.permissionRepository.find({
+        order: { id: 'ASC' },
+      });
+      result.permissions = allPermissions.map((p) => ({
+        value: p.name,
+        name: p.description,
+      }));
+    } else {
+      const permissionNames = user.permissions || [];
+      if (permissionNames.length > 0) {
+        const perms = await this.permissionRepository.find({
+          where: { name: In(permissionNames) },
+          order: { id: 'ASC' },
+        });
+        result.permissions = perms.map((p) => ({
+          value: p.name,
+          name: p.description,
+        }));
+      }
+    }
+
+    return result;
   }
 
   async updateProfile(userId: number, dto: UpdateProfileDto) {
@@ -84,20 +118,27 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('User not found');
 
     if (dto.email && dto.email !== user.email) {
-      const existing = await this.userRepository.findOne({ where: { email: dto.email } });
+      const existing = await this.userRepository.findOne({
+        where: { email: dto.email },
+      });
       if (existing) throw new ConflictException('Email already exists');
     }
 
     if (dto.name !== undefined) user.name = dto.name;
     if (dto.email !== undefined) user.email = dto.email;
-    if (dto.profileImageUrl !== undefined) user.profileImageUrl = dto.profileImageUrl;
+    if (dto.profileImageUrl !== undefined)
+      user.profileImageUrl = dto.profileImageUrl;
 
     const saved = await this.userRepository.save(user);
     const { password, ...result } = saved;
     return { success: true, message: 'Profile updated', data: result };
   }
 
-  async updatePassword(userId: number, oldPassword: string, newPassword: string) {
+  async updatePassword(
+    userId: number,
+    oldPassword: string,
+    newPassword: string,
+  ) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User not found');
 

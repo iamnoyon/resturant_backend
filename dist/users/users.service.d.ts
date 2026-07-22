@@ -21,6 +21,7 @@ export declare class UsersService {
             profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
+            permissions: string[];
             createdBy: number;
             updatedBy: number;
             createdAt: Date;
@@ -45,6 +46,7 @@ export declare class UsersService {
             profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
+            permissions: string[];
             createdBy: number;
             updatedBy: number;
             createdAt: Date;

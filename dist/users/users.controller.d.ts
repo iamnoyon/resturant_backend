@@ -1,7 +1,6 @@
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Role } from '../common/enums/role.enum';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 export declare class UsersController {
     private readonly usersService;
@@ -14,11 +13,12 @@ export declare class UsersController {
             name: string;
             email: string;
             phone: string;
-            role: Role;
+            role: import("../common/enums/role.enum").Role;
             status: import("../common/enums/user-status.enum").UserStatus;
             profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
+            permissions: string[];
             createdBy: number;
             updatedBy: number;
             createdAt: Date;
@@ -38,11 +38,12 @@ export declare class UsersController {
             name: string;
             email: string;
             phone: string;
-            role: Role;
+            role: import("../common/enums/role.enum").Role;
             status: import("../common/enums/user-status.enum").UserStatus;
             profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
+            permissions: string[];
             createdBy: number;
             updatedBy: number;
             createdAt: Date;

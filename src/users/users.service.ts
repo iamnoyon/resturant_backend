@@ -31,11 +31,18 @@ export class UsersService {
     }
     if (currentUser.role === Role.SUPERADMIN) {
       if (createUserDto.role !== Role.ADMIN) {
-        throw new ForbiddenException('Superadmin can only create admin accounts');
+        throw new ForbiddenException(
+          'Superadmin can only create admin accounts',
+        );
       }
     } else if (currentUser.role === Role.ADMIN) {
-      if (createUserDto.role !== Role.CASHIER && createUserDto.role !== Role.WAITER) {
-        throw new ForbiddenException('Admin can only create cashier and waiter accounts');
+      if (
+        createUserDto.role !== Role.CASHIER &&
+        createUserDto.role !== Role.WAITER
+      ) {
+        throw new ForbiddenException(
+          'Admin can only create cashier and waiter accounts',
+        );
       }
     } else {
       throw new ForbiddenException('You are not authorized to create users');
@@ -82,12 +89,11 @@ export class UsersService {
 
     const where: any = {};
 
-    if (
-      currentUser.role === Role.SUPERADMIN ||
-      currentUser.role === Role.ADMIN
-    ) {
+    if (currentUser.role === Role.ADMIN) {
       where.createdBy = currentUser.id;
     } else if (currentUser.role === Role.CASHIER) {
+      where.id = currentUser.id;
+    } else if (currentUser.role === Role.WAITER) {
       where.id = currentUser.id;
     }
 
@@ -132,19 +138,20 @@ export class UsersService {
         role: true,
         status: true,
         businessId: true,
+        createdBy: true,
         createdAt: true,
       },
     });
     if (!user) throw new NotFoundException('User not found');
-    if (
-      currentUser.role === Role.SUPERADMIN ||
-      currentUser.role === Role.ADMIN
-    ) {
+    if (currentUser.role === Role.ADMIN) {
       if (user.createdBy !== currentUser.id)
         throw new ForbiddenException('Access denied');
     } else if (currentUser.role === Role.CASHIER) {
       if (user.businessId !== currentUser.businessId)
         throw new ForbiddenException('Access denied');
+      if (user.id !== currentUser.id)
+        throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.WAITER) {
       if (user.id !== currentUser.id)
         throw new ForbiddenException('Access denied');
     }
@@ -154,15 +161,15 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto, currentUser: any) {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
-    if (
-      currentUser.role === Role.SUPERADMIN ||
-      currentUser.role === Role.ADMIN
-    ) {
+    if (currentUser.role === Role.ADMIN) {
       if (user.createdBy !== currentUser.id)
         throw new ForbiddenException('Access denied');
     } else if (currentUser.role === Role.CASHIER) {
       if (user.businessId !== currentUser.businessId)
         throw new ForbiddenException('Access denied');
+      if (user.id !== currentUser.id)
+        throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.WAITER) {
       if (user.id !== currentUser.id)
         throw new ForbiddenException('Access denied');
     }
@@ -193,13 +200,12 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
     if (user.role === Role.SUPERADMIN)
       throw new BadRequestException('Cannot delete superadmin');
-    if (
-      currentUser.role === Role.SUPERADMIN ||
-      currentUser.role === Role.ADMIN
-    ) {
+    if (currentUser.role === Role.ADMIN) {
       if (user.createdBy !== currentUser.id)
         throw new ForbiddenException('Access denied');
     } else if (currentUser.role === Role.CASHIER) {
+      throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.WAITER) {
       throw new ForbiddenException('Access denied');
     }
     await this.userRepository.softRemove(user);

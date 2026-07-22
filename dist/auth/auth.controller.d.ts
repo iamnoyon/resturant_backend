@@ -23,17 +23,7 @@ export declare class AuthController {
     }>;
     getProfile(currentUser: any): Promise<{
         success: boolean;
-        data: {
-            id: number;
-            name: string;
-            email: string;
-            phone: string;
-            profileImageUrl: string;
-            role: import("../common/enums/role.enum").Role;
-            status: import("../common/enums/user-status.enum").UserStatus.ACTIVE;
-            businessId: number;
-            business: import("../business/entities/business.entity").Business;
-        };
+        data: any;
     }>;
     updateProfile(dto: UpdateProfileDto, currentUser: any): Promise<{
         success: boolean;
@@ -48,6 +38,7 @@ export declare class AuthController {
             profileImageUrl: string;
             businessId: number;
             business: import("../business/entities/business.entity").Business;
+            permissions: string[];
             createdBy: number;
             updatedBy: number;
             createdAt: Date;

@@ -26,11 +26,17 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "name", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'user@restaurant.com', description: 'Email address' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'user@restaurant.com',
+        description: 'Email address',
+    }),
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'https://example.com/profile.jpg', description: 'Profile image URL' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'https://example.com/profile.jpg',
+        description: 'Profile image URL',
+    }),
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "profileImageUrl", void 0);
 //# sourceMappingURL=update-profile.dto.js.map

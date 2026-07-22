@@ -68,7 +68,8 @@ let UsersService = class UsersService {
             }
         }
         else if (currentUser.role === role_enum_1.Role.ADMIN) {
-            if (createUserDto.role !== role_enum_1.Role.CASHIER && createUserDto.role !== role_enum_1.Role.WAITER) {
+            if (createUserDto.role !== role_enum_1.Role.CASHIER &&
+                createUserDto.role !== role_enum_1.Role.WAITER) {
                 throw new common_1.ForbiddenException('Admin can only create cashier and waiter accounts');
             }
         }
@@ -108,11 +109,13 @@ let UsersService = class UsersService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             where.createdBy = currentUser.id;
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
+            where.id = currentUser.id;
+        }
+        else if (currentUser.role === role_enum_1.Role.WAITER) {
             where.id = currentUser.id;
         }
         if (query.search) {
@@ -153,13 +156,13 @@ let UsersService = class UsersService {
                 role: true,
                 status: true,
                 businessId: true,
+                createdBy: true,
                 createdAt: true,
             },
         });
         if (!user)
             throw new common_1.NotFoundException('User not found');
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             if (user.createdBy !== currentUser.id)
                 throw new common_1.ForbiddenException('Access denied');
         }
@@ -169,20 +172,27 @@ let UsersService = class UsersService {
             if (user.id !== currentUser.id)
                 throw new common_1.ForbiddenException('Access denied');
         }
+        else if (currentUser.role === role_enum_1.Role.WAITER) {
+            if (user.id !== currentUser.id)
+                throw new common_1.ForbiddenException('Access denied');
+        }
         return { success: true, data: user };
     }
     async update(id, updateUserDto, currentUser) {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user)
             throw new common_1.NotFoundException('User not found');
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             if (user.createdBy !== currentUser.id)
                 throw new common_1.ForbiddenException('Access denied');
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
             if (user.businessId !== currentUser.businessId)
                 throw new common_1.ForbiddenException('Access denied');
+            if (user.id !== currentUser.id)
+                throw new common_1.ForbiddenException('Access denied');
+        }
+        else if (currentUser.role === role_enum_1.Role.WAITER) {
             if (user.id !== currentUser.id)
                 throw new common_1.ForbiddenException('Access denied');
         }
@@ -213,12 +223,14 @@ let UsersService = class UsersService {
             throw new common_1.NotFoundException('User not found');
         if (user.role === role_enum_1.Role.SUPERADMIN)
             throw new common_1.BadRequestException('Cannot delete superadmin');
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             if (user.createdBy !== currentUser.id)
                 throw new common_1.ForbiddenException('Access denied');
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
+            throw new common_1.ForbiddenException('Access denied');
+        }
+        else if (currentUser.role === role_enum_1.Role.WAITER) {
             throw new common_1.ForbiddenException('Access denied');
         }
         await this.userRepository.softRemove(user);

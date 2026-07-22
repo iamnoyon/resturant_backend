@@ -43,7 +43,6 @@ export class CategoryService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -72,8 +71,7 @@ export class CategoryService {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       category.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -95,8 +93,7 @@ export class CategoryService {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       category.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -115,7 +112,6 @@ export class CategoryService {
   async dropdown(currentUser: any) {
     const where: any = { isActive: true };
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -136,8 +132,7 @@ export class CategoryService {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       category.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');

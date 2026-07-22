@@ -43,7 +43,6 @@ export class ProductService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -85,8 +84,7 @@ export class ProductService {
     });
     if (!product) throw new NotFoundException('Product not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       product.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -115,8 +113,7 @@ export class ProductService {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) throw new NotFoundException('Product not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       product.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -135,7 +132,6 @@ export class ProductService {
   async dropdown(currentUser: any) {
     const where: any = { isActive: true };
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -145,7 +141,13 @@ export class ProductService {
 
     const data = await this.productRepository.find({
       where,
-      select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true },
+      select: {
+        id: true,
+        productName: true,
+        soldPrice: true,
+        stock: true,
+        imageUrl: true,
+      },
       order: { productName: 'ASC' },
     });
 
@@ -155,7 +157,6 @@ export class ProductService {
   async findByCategory(categoryId: number, currentUser: any) {
     const where: any = { isActive: true, categoryId };
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -165,7 +166,14 @@ export class ProductService {
 
     const products = await this.productRepository.find({
       where,
-      select: { id: true, productName: true, soldPrice: true, stock: true, imageUrl: true, stockRequired: true },
+      select: {
+        id: true,
+        productName: true,
+        soldPrice: true,
+        stock: true,
+        imageUrl: true,
+        stockRequired: true,
+      },
       order: { productName: 'ASC' },
     });
 
@@ -180,8 +188,7 @@ export class ProductService {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) throw new NotFoundException('Product not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       product.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -202,8 +209,7 @@ export class ProductService {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) throw new NotFoundException('Product not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       product.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');

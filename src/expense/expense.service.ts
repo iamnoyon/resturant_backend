@@ -43,7 +43,6 @@ export class ExpenseService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -72,8 +71,7 @@ export class ExpenseService {
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) throw new NotFoundException('Expense not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       expense.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -95,8 +93,7 @@ export class ExpenseService {
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) throw new NotFoundException('Expense not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       expense.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -116,8 +113,7 @@ export class ExpenseService {
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) throw new NotFoundException('Expense not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       expense.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');

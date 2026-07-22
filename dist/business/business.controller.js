@@ -19,11 +19,10 @@ const swagger_1 = require("@nestjs/swagger");
 const business_service_1 = require("./business.service");
 const create_business_dto_1 = require("./dto/create-business.dto");
 const update_business_dto_1 = require("./dto/update-business.dto");
-const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const require_permissions_decorator_1 = require("../common/decorators/require-permissions.decorator");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
-const roles_guard_1 = require("../common/guards/roles.guard");
+const permissions_guard_1 = require("../common/guards/permissions.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
-const role_enum_1 = require("../common/enums/role.enum");
 const pagination_dto_1 = require("../common/dto/pagination.dto");
 let BusinessController = class BusinessController {
     businessService;
@@ -49,7 +48,7 @@ let BusinessController = class BusinessController {
 exports.BusinessController = BusinessController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPERADMIN, role_enum_1.Role.ADMIN),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:create'),
     openapi.ApiResponse({ status: 201 }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -59,6 +58,7 @@ __decorate([
 ], BusinessController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -68,6 +68,7 @@ __decorate([
 ], BusinessController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -77,7 +78,7 @@ __decorate([
 ], BusinessController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPERADMIN, role_enum_1.Role.ADMIN),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:update'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -88,7 +89,7 @@ __decorate([
 ], BusinessController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPERADMIN),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:delete'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -100,7 +101,7 @@ exports.BusinessController = BusinessController = __decorate([
     (0, swagger_1.ApiTags)('Business'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('business'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     __metadata("design:paramtypes", [business_service_1.BusinessService])
 ], BusinessController);
 //# sourceMappingURL=business.controller.js.map

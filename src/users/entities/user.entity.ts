@@ -44,6 +44,9 @@ export class User {
   @JoinColumn({ name: 'businessId' })
   business: Business;
 
+  @Column({ type: 'simple-json', nullable: true })
+  permissions: string[];
+
   @Column({ nullable: true })
   createdBy: number;
 

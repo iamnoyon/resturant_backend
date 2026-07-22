@@ -45,7 +45,9 @@ let OrderService = class OrderService {
         const saved = await this.orderRepository.save(order);
         for (const item of createOrderDto.products) {
             if (item.quantity > 0) {
-                const product = await this.productRepository.findOne({ where: { id: item.productId } });
+                const product = await this.productRepository.findOne({
+                    where: { id: item.productId },
+                });
                 if (product && product.stockRequired) {
                     product.stock = Math.max(0, Number(product.stock) - item.quantity);
                     await this.productRepository.save(product);
@@ -61,8 +63,7 @@ let OrderService = class OrderService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             where.createdBy = currentUser.id;
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
@@ -92,8 +93,7 @@ let OrderService = class OrderService {
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             order.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -107,8 +107,7 @@ let OrderService = class OrderService {
         const order = await this.orderRepository.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             order.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -124,8 +123,7 @@ let OrderService = class OrderService {
         const order = await this.orderRepository.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             order.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -139,7 +137,9 @@ let OrderService = class OrderService {
         if (order.products && order.products.length > 0) {
             for (const item of order.products) {
                 if (item.quantity > 0) {
-                    const product = await this.productRepository.findOne({ where: { id: item.productId } });
+                    const product = await this.productRepository.findOne({
+                        where: { id: item.productId },
+                    });
                     if (product && product.stockRequired) {
                         product.stock = Number(product.stock) + item.quantity;
                         await this.productRepository.save(product);
@@ -154,8 +154,7 @@ let OrderService = class OrderService {
         const order = await this.orderRepository.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             order.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }

@@ -19,7 +19,11 @@ export class CreateProductDto {
   @ApiProperty({ example: 150.0, description: 'Selling price of the product' })
   soldPrice: number;
 
-  @ApiPropertyOptional({ example: 50, description: 'Stock quantity', default: 0 })
+  @ApiPropertyOptional({
+    example: 50,
+    description: 'Stock quantity',
+    default: 0,
+  })
   stock?: number;
 
   @ApiPropertyOptional({

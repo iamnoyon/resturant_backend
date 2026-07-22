@@ -12,6 +12,7 @@ export declare class User {
     profileImageUrl: string;
     businessId: number;
     business: Business;
+    permissions: string[];
     createdBy: number;
     updatedBy: number;
     createdAt: Date;

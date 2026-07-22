@@ -43,7 +43,6 @@ export class TableService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -72,8 +71,7 @@ export class TableService {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       table.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -91,8 +89,7 @@ export class TableService {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       table.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');
@@ -111,7 +108,6 @@ export class TableService {
   async dropdown(currentUser: any) {
     const where: any = { isActive: true };
     if (
-      currentUser.role === Role.SUPERADMIN ||
       currentUser.role === Role.ADMIN
     ) {
       where.createdBy = currentUser.id;
@@ -132,8 +128,7 @@ export class TableService {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');
     if (
-      (currentUser.role === Role.SUPERADMIN ||
-        currentUser.role === Role.ADMIN) &&
+      (currentUser.role === Role.ADMIN) &&
       table.createdBy !== currentUser.id
     ) {
       throw new ForbiddenException('Access denied');

@@ -20,7 +20,8 @@ const order_service_1 = require("./order.service");
 const create_order_dto_1 = require("./dto/create-order.dto");
 const update_order_dto_1 = require("./dto/update-order.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
-const roles_guard_1 = require("../common/guards/roles.guard");
+const permissions_guard_1 = require("../common/guards/permissions.guard");
+const require_permissions_decorator_1 = require("../common/decorators/require-permissions.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const pagination_dto_1 = require("../common/dto/pagination.dto");
 const bill_status_enum_1 = require("../common/enums/bill-status.enum");
@@ -51,6 +52,7 @@ let OrderController = class OrderController {
 exports.OrderController = OrderController;
 __decorate([
     (0, common_1.Post)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('order:create'),
     openapi.ApiResponse({ status: 201 }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -60,6 +62,7 @@ __decorate([
 ], OrderController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('order:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -69,6 +72,7 @@ __decorate([
 ], OrderController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('order:read'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -78,6 +82,7 @@ __decorate([
 ], OrderController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('order:update'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -88,6 +93,7 @@ __decorate([
 ], OrderController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, require_permissions_decorator_1.RequirePermissions)('order:delete'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -97,6 +103,7 @@ __decorate([
 ], OrderController.prototype, "remove", null);
 __decorate([
     (0, common_1.Patch)(':id/bill-status'),
+    (0, require_permissions_decorator_1.RequirePermissions)('order:update-bill-status'),
     openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('billStatus')),
@@ -109,7 +116,7 @@ exports.OrderController = OrderController = __decorate([
     (0, swagger_1.ApiTags)('Orders'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('orders'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     __metadata("design:paramtypes", [order_service_1.OrderService])
 ], OrderController);
 //# sourceMappingURL=order.controller.js.map

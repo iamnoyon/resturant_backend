@@ -26,12 +26,13 @@ let User = class User {
     profileImageUrl;
     businessId;
     business;
+    permissions;
     createdBy;
     updatedBy;
     createdAt;
     updatedAt;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => Number }, name: { required: true, type: () => String }, email: { required: true, type: () => String }, phone: { required: true, type: () => String }, password: { required: true, type: () => String }, role: { required: true, enum: require("../../common/enums/role.enum").Role }, status: { required: true, enum: require("../../common/enums/user-status.enum").UserStatus }, profileImageUrl: { required: true, type: () => String }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+        return { id: { required: true, type: () => Number }, name: { required: true, type: () => String }, email: { required: true, type: () => String }, phone: { required: true, type: () => String }, password: { required: true, type: () => String }, role: { required: true, enum: require("../../common/enums/role.enum").Role }, status: { required: true, enum: require("../../common/enums/user-status.enum").UserStatus }, profileImageUrl: { required: true, type: () => String }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, permissions: { required: true, type: () => [String] }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
     }
 };
 exports.User = User;
@@ -76,6 +77,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'businessId' }),
     __metadata("design:type", business_entity_1.Business)
 ], User.prototype, "business", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
+    __metadata("design:type", Array)
+], User.prototype, "permissions", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", Number)

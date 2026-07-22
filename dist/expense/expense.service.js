@@ -39,8 +39,7 @@ let ExpenseService = class ExpenseService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) {
+        if (currentUser.role === role_enum_1.Role.ADMIN) {
             where.createdBy = currentUser.id;
         }
         else if (currentUser.role === role_enum_1.Role.CASHIER) {
@@ -65,8 +64,7 @@ let ExpenseService = class ExpenseService {
         const expense = await this.expenseRepository.findOne({ where: { id } });
         if (!expense)
             throw new common_1.NotFoundException('Expense not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             expense.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -80,8 +78,7 @@ let ExpenseService = class ExpenseService {
         const expense = await this.expenseRepository.findOne({ where: { id } });
         if (!expense)
             throw new common_1.NotFoundException('Expense not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             expense.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -97,8 +94,7 @@ let ExpenseService = class ExpenseService {
         const expense = await this.expenseRepository.findOne({ where: { id } });
         if (!expense)
             throw new common_1.NotFoundException('Expense not found');
-        if ((currentUser.role === role_enum_1.Role.SUPERADMIN ||
-            currentUser.role === role_enum_1.Role.ADMIN) &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
             expense.createdBy !== currentUser.id) {
             throw new common_1.ForbiddenException('Access denied');
         }
