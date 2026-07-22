@@ -6,8 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Business } from './entities/business.entity';
-import { CreateBusinessDto } from './dto/create-business.dto';
-import { UpdateBusinessDto } from './dto/update-business.dto';
+import { UpsertBusinessDto } from './dto/upsert-business.dto';
 import {
   PaginationQueryDto,
   PaginatedResult,
@@ -21,9 +20,19 @@ export class BusinessService {
     private businessRepository: Repository<Business>,
   ) {}
 
-  async create(createBusinessDto: CreateBusinessDto, currentUser: any) {
+  async upsert(upsertBusinessDto: UpsertBusinessDto, currentUser: any) {
+    const existing = await this.businessRepository.findOne({
+      where: { adminId: currentUser.id },
+    });
+
+    if (existing) {
+      Object.assign(existing, upsertBusinessDto);
+      const saved = await this.businessRepository.save(existing);
+      return { success: true, message: 'Business updated', data: saved };
+    }
+
     const business = this.businessRepository.create({
-      ...createBusinessDto,
+      ...upsertBusinessDto,
       adminId: currentUser.id,
     });
     const saved = await this.businessRepository.save(business);
@@ -64,6 +73,14 @@ export class BusinessService {
     };
   }
 
+  async findByAdminId(adminId: number) {
+    const business = await this.businessRepository.findOne({
+      where: { adminId },
+    });
+    if (!business) throw new NotFoundException('Business not found');
+    return { success: true, data: business };
+  }
+
   async findOne(id: number, currentUser: any) {
     const business = await this.businessRepository.findOne({ where: { id } });
     if (!business) throw new NotFoundException('Business not found');
@@ -71,21 +88,6 @@ export class BusinessService {
       throw new ForbiddenException('Access denied');
     }
     return { success: true, data: business };
-  }
-
-  async update(
-    id: number,
-    updateBusinessDto: UpdateBusinessDto,
-    currentUser: any,
-  ) {
-    const business = await this.businessRepository.findOne({ where: { id } });
-    if (!business) throw new NotFoundException('Business not found');
-    if (business.adminId !== currentUser.id) {
-      throw new ForbiddenException('Access denied');
-    }
-    Object.assign(business, updateBusinessDto);
-    const saved = await this.businessRepository.save(business);
-    return { success: true, message: 'Business updated', data: saved };
   }
 
   async remove(id: number, currentUser: any) {

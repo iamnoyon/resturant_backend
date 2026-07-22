@@ -23,9 +23,17 @@ let BusinessService = class BusinessService {
     constructor(businessRepository) {
         this.businessRepository = businessRepository;
     }
-    async create(createBusinessDto, currentUser) {
+    async upsert(upsertBusinessDto, currentUser) {
+        const existing = await this.businessRepository.findOne({
+            where: { adminId: currentUser.id },
+        });
+        if (existing) {
+            Object.assign(existing, upsertBusinessDto);
+            const saved = await this.businessRepository.save(existing);
+            return { success: true, message: 'Business updated', data: saved };
+        }
         const business = this.businessRepository.create({
-            ...createBusinessDto,
+            ...upsertBusinessDto,
             adminId: currentUser.id,
         });
         const saved = await this.businessRepository.save(business);
@@ -56,6 +64,14 @@ let BusinessService = class BusinessService {
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
+    async findByAdminId(adminId) {
+        const business = await this.businessRepository.findOne({
+            where: { adminId },
+        });
+        if (!business)
+            throw new common_1.NotFoundException('Business not found');
+        return { success: true, data: business };
+    }
     async findOne(id, currentUser) {
         const business = await this.businessRepository.findOne({ where: { id } });
         if (!business)
@@ -64,17 +80,6 @@ let BusinessService = class BusinessService {
             throw new common_1.ForbiddenException('Access denied');
         }
         return { success: true, data: business };
-    }
-    async update(id, updateBusinessDto, currentUser) {
-        const business = await this.businessRepository.findOne({ where: { id } });
-        if (!business)
-            throw new common_1.NotFoundException('Business not found');
-        if (business.adminId !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        Object.assign(business, updateBusinessDto);
-        const saved = await this.businessRepository.save(business);
-        return { success: true, message: 'Business updated', data: saved };
     }
     async remove(id, currentUser) {
         const business = await this.businessRepository.findOne({ where: { id } });

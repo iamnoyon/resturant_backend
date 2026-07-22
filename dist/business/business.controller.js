@@ -17,8 +17,7 @@ const openapi = require("@nestjs/swagger");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const business_service_1 = require("./business.service");
-const create_business_dto_1 = require("./dto/create-business.dto");
-const update_business_dto_1 = require("./dto/update-business.dto");
+const upsert_business_dto_1 = require("./dto/upsert-business.dto");
 const require_permissions_decorator_1 = require("../common/decorators/require-permissions.decorator");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const permissions_guard_1 = require("../common/guards/permissions.guard");
@@ -29,8 +28,11 @@ let BusinessController = class BusinessController {
     constructor(businessService) {
         this.businessService = businessService;
     }
-    create(createBusinessDto, currentUser) {
-        return this.businessService.create(createBusinessDto, currentUser);
+    upsert(upsertBusinessDto, currentUser) {
+        return this.businessService.upsert(upsertBusinessDto, currentUser);
+    }
+    getMyBusiness(currentUser) {
+        return this.businessService.findByAdminId(currentUser.id);
     }
     findAll(query, currentUser) {
         return this.businessService.findAll(query, currentUser);
@@ -38,24 +40,30 @@ let BusinessController = class BusinessController {
     findOne(id, currentUser) {
         return this.businessService.findOne(+id, currentUser);
     }
-    update(id, updateBusinessDto, currentUser) {
-        return this.businessService.update(+id, updateBusinessDto, currentUser);
-    }
     remove(id, currentUser) {
         return this.businessService.remove(+id, currentUser);
     }
 };
 exports.BusinessController = BusinessController;
 __decorate([
-    (0, common_1.Post)(),
-    (0, require_permissions_decorator_1.RequirePermissions)('business:create'),
-    openapi.ApiResponse({ status: 201 }),
+    (0, common_1.Put)(),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:update'),
+    openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_business_dto_1.CreateBusinessDto, Object]),
+    __metadata("design:paramtypes", [upsert_business_dto_1.UpsertBusinessDto, Object]),
     __metadata("design:returntype", void 0)
-], BusinessController.prototype, "create", null);
+], BusinessController.prototype, "upsert", null);
+__decorate([
+    (0, common_1.Get)('my'),
+    (0, require_permissions_decorator_1.RequirePermissions)('business:read'),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], BusinessController.prototype, "getMyBusiness", null);
 __decorate([
     (0, common_1.Get)(),
     (0, require_permissions_decorator_1.RequirePermissions)('business:read'),
@@ -76,17 +84,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], BusinessController.prototype, "findOne", null);
-__decorate([
-    (0, common_1.Patch)(':id'),
-    (0, require_permissions_decorator_1.RequirePermissions)('business:update'),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
-    __param(2, (0, current_user_decorator_1.CurrentUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_business_dto_1.UpdateBusinessDto, Object]),
-    __metadata("design:returntype", void 0)
-], BusinessController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, require_permissions_decorator_1.RequirePermissions)('business:delete'),

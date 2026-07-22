@@ -1,9 +1,8 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   Query,
@@ -11,8 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BusinessService } from './business.service';
-import { CreateBusinessDto } from './dto/create-business.dto';
-import { UpdateBusinessDto } from './dto/update-business.dto';
+import { UpsertBusinessDto } from './dto/upsert-business.dto';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -26,13 +24,19 @@ import { PaginationQueryDto } from '../common/dto/pagination.dto';
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
-  @Post()
-  @RequirePermissions('business:create')
-  create(
-    @Body() createBusinessDto: CreateBusinessDto,
+  @Put()
+  @RequirePermissions('business:update')
+  upsert(
+    @Body() upsertBusinessDto: UpsertBusinessDto,
     @CurrentUser() currentUser: any,
   ) {
-    return this.businessService.create(createBusinessDto, currentUser);
+    return this.businessService.upsert(upsertBusinessDto, currentUser);
+  }
+
+  @Get('my')
+  @RequirePermissions('business:read')
+  getMyBusiness(@CurrentUser() currentUser: any) {
+    return this.businessService.findByAdminId(currentUser.id);
   }
 
   @Get()
@@ -45,16 +49,6 @@ export class BusinessController {
   @RequirePermissions('business:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.businessService.findOne(+id, currentUser);
-  }
-
-  @Patch(':id')
-  @RequirePermissions('business:update')
-  update(
-    @Param('id') id: string,
-    @Body() updateBusinessDto: UpdateBusinessDto,
-    @CurrentUser() currentUser: any,
-  ) {
-    return this.businessService.update(+id, updateBusinessDto, currentUser);
   }
 
   @Delete(':id')
