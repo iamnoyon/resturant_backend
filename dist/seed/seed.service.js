@@ -106,6 +106,7 @@ let SeedService = class SeedService {
         const savedSuperadmin = await this.userRepository.save(superadmin);
         console.log(`[Seed] Superadmin created: ${savedSuperadmin.email}`);
         const allPermissionNames = await this.getAllPermissionNames();
+        const adminPermissionNames = await this.getAdminPermissionNames();
         const adminPassword = await bcrypt.hash(this.configService.get('ADMIN_PASSWORD', 'Admin@123'), 10);
         const admin = this.userRepository.create({
             name: this.configService.get('ADMIN_NAME', 'Admin'),
@@ -115,7 +116,7 @@ let SeedService = class SeedService {
             role: role_enum_1.Role.ADMIN,
             status: user_status_enum_1.UserStatus.ACTIVE,
             createdBy: savedSuperadmin.id,
-            permissions: allPermissionNames,
+            permissions: adminPermissionNames,
         });
         const savedAdmin = await this.userRepository.save(admin);
         const business = this.businessRepository.create({
@@ -130,6 +131,13 @@ let SeedService = class SeedService {
         console.log(`[Seed] Admin created: ${savedAdmin.email}`);
         console.log('[Seed] Seeding completed.');
     }
+    async getAdminPermissionNames() {
+        await this.seedPermissions();
+        const permissions = await this.permissionRepository.find();
+        return permissions
+            .filter((p) => !p.name.startsWith('package:'))
+            .map((p) => p.name);
+    }
     async getAllPermissionNames() {
         await this.seedPermissions();
         const permissions = await this.permissionRepository.find();
@@ -140,17 +148,17 @@ let SeedService = class SeedService {
         const admins = await this.userRepository.find({
             where: { role: role_enum_1.Role.ADMIN },
         });
-        const allPermissionNames = await this.getAllPermissionNames();
-        if (allPermissionNames.length === 0) {
+        const adminPermissionNames = await this.getAdminPermissionNames();
+        if (adminPermissionNames.length === 0) {
             console.log('[Seed] No permissions found, skipping admin assignment.');
             return;
         }
         for (const admin of admins) {
             if (!admin.permissions || admin.permissions.length === 0) {
-                admin.permissions = allPermissionNames;
+                admin.permissions = adminPermissionNames;
                 admin.updatedBy = admin.createdBy || admin.id;
                 await this.userRepository.save(admin);
-                console.log(`[Seed] Assigned ${allPermissionNames.length} permissions to admin: ${admin.email}`);
+                console.log(`[Seed] Assigned ${adminPermissionNames.length} permissions to admin: ${admin.email}`);
             }
         }
     }

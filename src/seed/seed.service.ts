@@ -75,6 +75,7 @@ export class SeedService implements OnModuleInit {
     console.log(`[Seed] Superadmin created: ${savedSuperadmin.email}`);
 
     const allPermissionNames = await this.getAllPermissionNames();
+    const adminPermissionNames = await this.getAdminPermissionNames();
 
     const adminPassword = await bcrypt.hash(
       this.configService.get<string>('ADMIN_PASSWORD', 'Admin@123'),
@@ -92,7 +93,7 @@ export class SeedService implements OnModuleInit {
       role: Role.ADMIN,
       status: UserStatus.ACTIVE,
       createdBy: savedSuperadmin.id,
-      permissions: allPermissionNames,
+      permissions: adminPermissionNames,
     } as unknown as User);
 
     const savedAdmin = await this.userRepository.save(admin);
@@ -113,6 +114,14 @@ export class SeedService implements OnModuleInit {
     console.log('[Seed] Seeding completed.');
   }
 
+  private async getAdminPermissionNames(): Promise<string[]> {
+    await this.seedPermissions();
+    const permissions = await this.permissionRepository.find();
+    return permissions
+      .filter((p) => !p.name.startsWith('package:'))
+      .map((p) => p.name);
+  }
+
   private async getAllPermissionNames(): Promise<string[]> {
     await this.seedPermissions();
     const permissions = await this.permissionRepository.find();
@@ -125,18 +134,18 @@ export class SeedService implements OnModuleInit {
       where: { role: Role.ADMIN },
     });
 
-    const allPermissionNames = await this.getAllPermissionNames();
-    if (allPermissionNames.length === 0) {
+    const adminPermissionNames = await this.getAdminPermissionNames();
+    if (adminPermissionNames.length === 0) {
       console.log('[Seed] No permissions found, skipping admin assignment.');
       return;
     }
 
     for (const admin of admins) {
       if (!admin.permissions || admin.permissions.length === 0) {
-        admin.permissions = allPermissionNames;
+        admin.permissions = adminPermissionNames;
         admin.updatedBy = admin.createdBy || admin.id;
         await this.userRepository.save(admin);
-        console.log(`[Seed] Assigned ${allPermissionNames.length} permissions to admin: ${admin.email}`);
+        console.log(`[Seed] Assigned ${adminPermissionNames.length} permissions to admin: ${admin.email}`);
       }
     }
   }

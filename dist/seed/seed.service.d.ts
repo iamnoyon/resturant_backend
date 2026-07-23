@@ -14,6 +14,7 @@ export declare class SeedService implements OnModuleInit {
     seed(): Promise<void>;
     private seedPermissions;
     private seedUsers;
+    private getAdminPermissionNames;
     private getAllPermissionNames;
     private ensureAdminHasPermissions;
 }
