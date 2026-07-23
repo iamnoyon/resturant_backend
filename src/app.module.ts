@@ -13,6 +13,7 @@ import { SeedModule } from './seed/seed.module';
 import { UploadModule } from './upload/upload.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { PackageModule } from './package/package.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { PackageModule } from './package/package.module';
     UploadModule,
     PermissionsModule,
     PackageModule,
+    PaymentModule,
   ],
 })
 export class AppModule {}
