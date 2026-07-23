@@ -17,13 +17,14 @@ const auth_controller_1 = require("./auth.controller");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const user_entity_1 = require("../users/entities/user.entity");
 const permission_entity_1 = require("../permissions/entities/permission.entity");
+const business_entity_1 = require("../business/entities/business.entity");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, permission_entity_1.Permission]),
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, permission_entity_1.Permission, business_entity_1.Business]),
             passport_1.PassportModule,
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],

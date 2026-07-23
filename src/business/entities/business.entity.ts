@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { SubscriptionStatus } from '../../common/enums/subscription-status.enum';
 
 @Entity('businesses')
 export class Business {
@@ -31,6 +32,15 @@ export class Business {
 
   @Column({ nullable: true })
   area: string;
+
+  @Column({ type: 'enum', enum: SubscriptionStatus, default: SubscriptionStatus.INACTIVE })
+  subscription: SubscriptionStatus;
+
+  @Column({ type: 'date', nullable: true, name: 'sub_start_date' })
+  subStartDate: Date | null;
+
+  @Column({ type: 'date', nullable: true, name: 'sub_end_date' })
+  subEndDate: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;

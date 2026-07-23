@@ -21,6 +21,7 @@ const expense_module_1 = require("./expense/expense.module");
 const seed_module_1 = require("./seed/seed.module");
 const upload_module_1 = require("./upload/upload.module");
 const permissions_module_1 = require("./permissions/permissions.module");
+const package_module_1 = require("./package/package.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -56,6 +57,7 @@ exports.AppModule = AppModule = __decorate([
             seed_module_1.SeedModule,
             upload_module_1.UploadModule,
             permissions_module_1.PermissionsModule,
+            package_module_1.PackageModule,
         ],
     })
 ], AppModule);

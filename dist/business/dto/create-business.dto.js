@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateBusinessDto = void 0;
 const openapi = require("@nestjs/swagger");
 const swagger_1 = require("@nestjs/swagger");
+const subscription_status_enum_1 = require("../../common/enums/subscription-status.enum");
 class CreateBusinessDto {
     businessName;
     businessLogo;
@@ -19,8 +20,11 @@ class CreateBusinessDto {
     district;
     thana;
     area;
+    subscription;
+    subStartDate;
+    subEndDate;
     static _OPENAPI_METADATA_FACTORY() {
-        return { businessName: { required: true, type: () => String }, businessLogo: { required: false, type: () => String }, division: { required: false, type: () => String }, district: { required: false, type: () => String }, thana: { required: false, type: () => String }, area: { required: false, type: () => String } };
+        return { businessName: { required: true, type: () => String }, businessLogo: { required: false, type: () => String }, division: { required: false, type: () => String }, district: { required: false, type: () => String }, thana: { required: false, type: () => String }, area: { required: false, type: () => String }, subscription: { required: false, enum: require("../../common/enums/subscription-status.enum").SubscriptionStatus }, subStartDate: { required: false, type: () => String }, subEndDate: { required: false, type: () => String } };
     }
 }
 exports.CreateBusinessDto = CreateBusinessDto;
@@ -60,4 +64,26 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateBusinessDto.prototype, "area", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'active',
+        description: 'Subscription status',
+        enum: ['active', 'inactive'],
+    }),
+    __metadata("design:type", String)
+], CreateBusinessDto.prototype, "subscription", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: '2025-01-01',
+        description: 'Subscription start date',
+    }),
+    __metadata("design:type", String)
+], CreateBusinessDto.prototype, "subStartDate", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: '2026-01-01',
+        description: 'Subscription end date',
+    }),
+    __metadata("design:type", String)
+], CreateBusinessDto.prototype, "subEndDate", void 0);
 //# sourceMappingURL=create-business.dto.js.map

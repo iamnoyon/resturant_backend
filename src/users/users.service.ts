@@ -116,6 +116,7 @@ export class UsersService {
         businessId: true,
         createdAt: true,
       },
+      relations: { business: true },
       order: { [sortBy]: sortOrder },
     });
 

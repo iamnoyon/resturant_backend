@@ -8,6 +8,7 @@ import { Business } from '../business/entities/business.entity';
 import { Permission } from '../permissions/entities/permission.entity';
 import { Role } from '../common/enums/role.enum';
 import { UserStatus } from '../common/enums/user-status.enum';
+import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { PERMISSIONS_LIST } from '../permissions/permissions.constants';
 
 @Injectable()
@@ -100,6 +101,7 @@ export class SeedService implements OnModuleInit {
       businessName: 'Default Restaurant',
       area: 'Main Area',
       adminId: savedAdmin.id,
+      subscription: SubscriptionStatus.ACTIVE,
     } as unknown as Business);
 
     const savedBusiness = await this.businessRepository.save(business);

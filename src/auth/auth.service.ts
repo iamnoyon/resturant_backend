@@ -10,6 +10,7 @@ import { Repository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { Permission } from '../permissions/entities/permission.entity';
+import { Business } from '../business/entities/business.entity';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserStatus } from '../common/enums/user-status.enum';
@@ -22,12 +23,15 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(Permission)
     private permissionRepository: Repository<Permission>,
+    @InjectRepository(Business)
+    private businessRepository: Repository<Business>,
     private jwtService: JwtService,
   ) {}
 
   async login(loginDto: LoginDto) {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
+      relations: { business: true },
     });
 
     if (!user) {
@@ -52,6 +56,13 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
 
+    let business: Business | null = user.business;
+    if (!business) {
+      business = await this.businessRepository.findOne({
+        where: { adminId: user.id },
+      });
+    }
+
     const userData = {
       id: user.id,
       name: user.name,
@@ -60,6 +71,7 @@ export class AuthService {
       role: user.role,
       status: user.status,
       businessId: user.businessId,
+      business,
     };
 
     return { token, userData };
@@ -75,6 +87,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
 
+    let business: Business | null = user.business;
+    if (!business) {
+      business = await this.businessRepository.findOne({
+        where: { adminId: userId },
+      });
+    }
+
     const result: any = {
       id: user.id,
       name: user.name,
@@ -84,7 +103,7 @@ export class AuthService {
       role: user.role,
       status: user.status,
       businessId: user.businessId,
-      business: user.business,
+      business,
       permissions: [],
     };
 

@@ -56,6 +56,7 @@ const business_entity_1 = require("../business/entities/business.entity");
 const permission_entity_1 = require("../permissions/entities/permission.entity");
 const role_enum_1 = require("../common/enums/role.enum");
 const user_status_enum_1 = require("../common/enums/user-status.enum");
+const subscription_status_enum_1 = require("../common/enums/subscription-status.enum");
 const permissions_constants_1 = require("../permissions/permissions.constants");
 let SeedService = class SeedService {
     userRepository;
@@ -121,6 +122,7 @@ let SeedService = class SeedService {
             businessName: 'Default Restaurant',
             area: 'Main Area',
             adminId: savedAdmin.id,
+            subscription: subscription_status_enum_1.SubscriptionStatus.ACTIVE,
         });
         const savedBusiness = await this.businessRepository.save(business);
         savedAdmin.businessId = savedBusiness.id;

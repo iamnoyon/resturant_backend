@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SubscriptionStatus } from '../../common/enums/subscription-status.enum';
 
 export class UpsertBusinessDto {
   @ApiPropertyOptional({
@@ -30,4 +31,23 @@ export class UpsertBusinessDto {
     description: 'Area/address detail',
   })
   area?: string;
+
+  @ApiPropertyOptional({
+    example: 'active',
+    description: 'Subscription status',
+    enum: ['active', 'inactive'],
+  })
+  subscription?: SubscriptionStatus;
+
+  @ApiPropertyOptional({
+    example: '2025-01-01',
+    description: 'Subscription start date',
+  })
+  subStartDate?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-01-01',
+    description: 'Subscription end date',
+  })
+  subEndDate?: string;
 }

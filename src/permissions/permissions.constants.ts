@@ -211,4 +211,29 @@ export const PERMISSIONS_LIST = [
     module: 'upload',
     action: 'create',
   },
+
+  {
+    name: 'package:create',
+    description: 'Create packages',
+    module: 'package',
+    action: 'create',
+  },
+  {
+    name: 'package:read',
+    description: 'View packages',
+    module: 'package',
+    action: 'read',
+  },
+  {
+    name: 'package:update',
+    description: 'Update packages',
+    module: 'package',
+    action: 'update',
+  },
+  {
+    name: 'package:delete',
+    description: 'Delete packages',
+    module: 'package',
+    action: 'delete',
+  },
 ];

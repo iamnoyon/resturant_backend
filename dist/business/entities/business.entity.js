@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Business = void 0;
 const openapi = require("@nestjs/swagger");
 const typeorm_1 = require("typeorm");
+const subscription_status_enum_1 = require("../../common/enums/subscription-status.enum");
 let Business = class Business {
     id;
     adminId;
@@ -21,10 +22,13 @@ let Business = class Business {
     district;
     thana;
     area;
+    subscription;
+    subStartDate;
+    subEndDate;
     createdAt;
     updatedAt;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => Number }, adminId: { required: true, type: () => Number }, businessName: { required: true, type: () => String }, businessLogo: { required: true, type: () => String }, division: { required: true, type: () => String }, district: { required: true, type: () => String }, thana: { required: true, type: () => String }, area: { required: true, type: () => String }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+        return { id: { required: true, type: () => Number }, adminId: { required: true, type: () => Number }, businessName: { required: true, type: () => String }, businessLogo: { required: true, type: () => String }, division: { required: true, type: () => String }, district: { required: true, type: () => String }, thana: { required: true, type: () => String }, area: { required: true, type: () => String }, subscription: { required: true, enum: require("../../common/enums/subscription-status.enum").SubscriptionStatus }, subStartDate: { required: true, type: () => Date, nullable: true }, subEndDate: { required: true, type: () => Date, nullable: true }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
     }
 };
 exports.Business = Business;
@@ -60,6 +64,18 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Business.prototype, "area", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'enum', enum: subscription_status_enum_1.SubscriptionStatus, default: subscription_status_enum_1.SubscriptionStatus.INACTIVE }),
+    __metadata("design:type", String)
+], Business.prototype, "subscription", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', nullable: true, name: 'sub_start_date' }),
+    __metadata("design:type", Object)
+], Business.prototype, "subStartDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', nullable: true, name: 'sub_end_date' }),
+    __metadata("design:type", Object)
+], Business.prototype, "subEndDate", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

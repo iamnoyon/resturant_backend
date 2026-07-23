@@ -18,6 +18,7 @@ export declare class AuthController {
                 role: import("../common/enums/role.enum").Role;
                 status: import("../common/enums/user-status.enum").UserStatus.ACTIVE;
                 businessId: number;
+                business: import("../business/entities/business.entity").Business | null;
             };
         };
     }>;

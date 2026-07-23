@@ -53,20 +53,24 @@ const typeorm_2 = require("typeorm");
 const bcrypt = __importStar(require("bcrypt"));
 const user_entity_1 = require("../users/entities/user.entity");
 const permission_entity_1 = require("../permissions/entities/permission.entity");
+const business_entity_1 = require("../business/entities/business.entity");
 const user_status_enum_1 = require("../common/enums/user-status.enum");
 const role_enum_1 = require("../common/enums/role.enum");
 let AuthService = class AuthService {
     userRepository;
     permissionRepository;
+    businessRepository;
     jwtService;
-    constructor(userRepository, permissionRepository, jwtService) {
+    constructor(userRepository, permissionRepository, businessRepository, jwtService) {
         this.userRepository = userRepository;
         this.permissionRepository = permissionRepository;
+        this.businessRepository = businessRepository;
         this.jwtService = jwtService;
     }
     async login(loginDto) {
         const user = await this.userRepository.findOne({
             where: { email: loginDto.email },
+            relations: { business: true },
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Invalid email or password');
@@ -80,6 +84,12 @@ let AuthService = class AuthService {
         }
         const payload = { sub: user.id, email: user.email, role: user.role };
         const token = this.jwtService.sign(payload);
+        let business = user.business;
+        if (!business) {
+            business = await this.businessRepository.findOne({
+                where: { adminId: user.id },
+            });
+        }
         const userData = {
             id: user.id,
             name: user.name,
@@ -88,6 +98,7 @@ let AuthService = class AuthService {
             role: user.role,
             status: user.status,
             businessId: user.businessId,
+            business,
         };
         return { token, userData };
     }
@@ -99,6 +110,12 @@ let AuthService = class AuthService {
         if (!user || user.status !== user_status_enum_1.UserStatus.ACTIVE) {
             throw new common_1.UnauthorizedException('Invalid token');
         }
+        let business = user.business;
+        if (!business) {
+            business = await this.businessRepository.findOne({
+                where: { adminId: userId },
+            });
+        }
         const result = {
             id: user.id,
             name: user.name,
@@ -108,7 +125,7 @@ let AuthService = class AuthService {
             role: user.role,
             status: user.status,
             businessId: user.businessId,
-            business: user.business,
+            business,
             permissions: [],
         };
         if (user.role === role_enum_1.Role.SUPERADMIN) {
@@ -173,7 +190,9 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __param(1, (0, typeorm_1.InjectRepository)(permission_entity_1.Permission)),
+    __param(2, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         jwt_1.JwtService])
 ], AuthService);
