@@ -16,6 +16,7 @@ export declare class Order {
     billStatus: BillStatus;
     businessId: number;
     business: Business;
+    waiterId: number;
     createdBy: number;
     updatedBy: number;
     createdAt: Date;

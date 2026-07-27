@@ -127,6 +127,19 @@ export class UsersService {
     };
   }
 
+  async getWaiters(currentUser: any) {
+    const waiters = await this.userRepository.find({
+      where: {
+        businessId: currentUser.businessId,
+        role: Role.WAITER,
+        status: UserStatus.ACTIVE,
+      },
+      select: { id: true, name: true, profileImageUrl: true },
+      order: { name: 'ASC' },
+    });
+    return { success: true, data: waiters };
+  }
+
   async findOne(id: number, currentUser: any) {
     const user = await this.userRepository.findOne({
       where: { id },

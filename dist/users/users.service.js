@@ -145,6 +145,18 @@ let UsersService = class UsersService {
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
+    async getWaiters(currentUser) {
+        const waiters = await this.userRepository.find({
+            where: {
+                businessId: currentUser.businessId,
+                role: role_enum_1.Role.WAITER,
+                status: user_status_enum_1.UserStatus.ACTIVE,
+            },
+            select: { id: true, name: true, profileImageUrl: true },
+            order: { name: 'ASC' },
+        });
+        return { success: true, data: waiters };
+    }
     async findOne(id, currentUser) {
         const user = await this.userRepository.findOne({
             where: { id },

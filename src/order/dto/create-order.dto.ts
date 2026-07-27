@@ -29,4 +29,7 @@ export class CreateOrderDto {
     enum: ['unpaid', 'paid'],
   })
   billStatus: BillStatus;
+
+  @ApiProperty({ example: 3, description: 'Waiter ID reference', required: false })
+  waiterId?: number;
 }

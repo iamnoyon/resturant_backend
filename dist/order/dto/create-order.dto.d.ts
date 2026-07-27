@@ -9,4 +9,5 @@ export declare class CreateOrderDto {
     discount: number;
     subTotal: number;
     billStatus: BillStatus;
+    waiterId?: number;
 }

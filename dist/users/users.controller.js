@@ -35,6 +35,9 @@ let UsersController = class UsersController {
     findAll(query, currentUser) {
         return this.usersService.findAll(query, currentUser);
     }
+    getWaiters(currentUser) {
+        return this.usersService.getWaiters(currentUser);
+    }
     findOne(id, currentUser) {
         return this.usersService.findOne(+id, currentUser);
     }
@@ -66,6 +69,15 @@ __decorate([
     __metadata("design:paramtypes", [pagination_dto_1.PaginationQueryDto, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('waiters'),
+    (0, require_permissions_decorator_1.RequirePermissions)('user:read'),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getWaiters", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, require_permissions_decorator_1.RequirePermissions)('user:read'),

@@ -21,8 +21,9 @@ class UpdateOrderDto {
     discount;
     subTotal;
     billStatus;
+    waiterId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { tableId: { required: false, type: () => Number }, products: { required: false, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: false, type: () => Number }, discount: { required: false, type: () => Number }, subTotal: { required: false, type: () => Number }, billStatus: { required: false, enum: require("../../common/enums/bill-status.enum").BillStatus } };
+        return { tableId: { required: false, type: () => Number }, products: { required: false, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: false, type: () => Number }, discount: { required: false, type: () => Number }, subTotal: { required: false, type: () => Number }, billStatus: { required: false, enum: require("../../common/enums/bill-status.enum").BillStatus }, waiterId: { required: false, type: () => Number } };
     }
 }
 exports.UpdateOrderDto = UpdateOrderDto;
@@ -72,4 +73,10 @@ __decorate([
     (0, class_validator_1.IsEnum)(bill_status_enum_1.BillStatus),
     __metadata("design:type", String)
 ], UpdateOrderDto.prototype, "billStatus", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 3, description: 'Waiter ID reference' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], UpdateOrderDto.prototype, "waiterId", void 0);
 //# sourceMappingURL=update-order.dto.js.map

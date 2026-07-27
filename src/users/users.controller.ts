@@ -41,6 +41,12 @@ export class UsersController {
     return this.usersService.findAll(query, currentUser);
   }
 
+  @Get('waiters')
+  @RequirePermissions('user:read')
+  getWaiters(@CurrentUser() currentUser: any) {
+    return this.usersService.getWaiters(currentUser);
+  }
+
   @Get(':id')
   @RequirePermissions('user:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {

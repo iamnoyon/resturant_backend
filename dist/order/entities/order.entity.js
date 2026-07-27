@@ -27,12 +27,13 @@ let Order = class Order {
     billStatus;
     businessId;
     business;
+    waiterId;
     createdBy;
     updatedBy;
     createdAt;
     updatedAt;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => Number }, orderId: { required: true, type: () => String }, tableId: { required: true, type: () => Number }, table: { required: true, type: () => require("../../table/entities/table.entity").Table }, products: { required: true, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: true, type: () => Number }, discount: { required: true, type: () => Number }, subTotal: { required: true, type: () => Number }, billStatus: { required: true, enum: require("../../common/enums/bill-status.enum").BillStatus }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
+        return { id: { required: true, type: () => Number }, orderId: { required: true, type: () => String }, tableId: { required: true, type: () => Number }, table: { required: true, type: () => require("../../table/entities/table.entity").Table }, products: { required: true, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: true, type: () => Number }, discount: { required: true, type: () => Number }, subTotal: { required: true, type: () => Number }, billStatus: { required: true, enum: require("../../common/enums/bill-status.enum").BillStatus }, businessId: { required: true, type: () => Number }, business: { required: true, type: () => require("../../business/entities/business.entity").Business }, waiterId: { required: true, type: () => Number }, createdBy: { required: true, type: () => Number }, updatedBy: { required: true, type: () => Number }, createdAt: { required: true, type: () => Date }, updatedAt: { required: true, type: () => Date } };
     }
 };
 exports.Order = Order;
@@ -82,6 +83,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'businessId' }),
     __metadata("design:type", business_entity_1.Business)
 ], Order.prototype, "business", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", Number)
+], Order.prototype, "waiterId", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)

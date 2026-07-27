@@ -29,6 +29,10 @@ export declare class UsersService {
         };
     }>;
     findAll(query: PaginationQueryDto, currentUser: any): Promise<PaginatedResult<User>>;
+    getWaiters(currentUser: any): Promise<{
+        success: boolean;
+        data: User[];
+    }>;
     findOne(id: number, currentUser: any): Promise<{
         success: boolean;
         data: User;

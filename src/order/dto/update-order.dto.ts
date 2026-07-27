@@ -42,4 +42,9 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsEnum(BillStatus)
   billStatus?: BillStatus;
+
+  @ApiPropertyOptional({ example: 3, description: 'Waiter ID reference' })
+  @IsOptional()
+  @IsNumber()
+  waiterId?: number;
 }

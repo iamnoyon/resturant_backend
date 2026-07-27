@@ -48,6 +48,9 @@ export class Order {
   @JoinColumn({ name: 'businessId' })
   business: Business;
 
+  @Column({ nullable: true })
+  waiterId: number;
+
   @Column()
   createdBy: number;
 

@@ -26,6 +26,10 @@ export declare class UsersController {
         };
     }>;
     findAll(query: PaginationQueryDto, currentUser: any): Promise<import("../common/dto/pagination.dto").PaginatedResult<import("./entities/user.entity").User>>;
+    getWaiters(currentUser: any): Promise<{
+        success: boolean;
+        data: import("./entities/user.entity").User[];
+    }>;
     findOne(id: string, currentUser: any): Promise<{
         success: boolean;
         data: import("./entities/user.entity").User;

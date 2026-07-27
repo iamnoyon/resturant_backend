@@ -20,8 +20,9 @@ class CreateOrderDto {
     discount;
     subTotal;
     billStatus;
+    waiterId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { tableId: { required: true, type: () => Number }, products: { required: true, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: true, type: () => Number }, discount: { required: true, type: () => Number }, subTotal: { required: true, type: () => Number }, billStatus: { required: true, enum: require("../../common/enums/bill-status.enum").BillStatus } };
+        return { tableId: { required: true, type: () => Number }, products: { required: true, type: () => [({ productId: { required: true, type: () => Number }, quantity: { required: true, type: () => Number } })] }, totalBill: { required: true, type: () => Number }, discount: { required: true, type: () => Number }, subTotal: { required: true, type: () => Number }, billStatus: { required: true, enum: require("../../common/enums/bill-status.enum").BillStatus }, waiterId: { required: false, type: () => Number } };
     }
 }
 exports.CreateOrderDto = CreateOrderDto;
@@ -59,4 +60,8 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateOrderDto.prototype, "billStatus", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 3, description: 'Waiter ID reference', required: false }),
+    __metadata("design:type", Number)
+], CreateOrderDto.prototype, "waiterId", void 0);
 //# sourceMappingURL=create-order.dto.js.map
