@@ -21,10 +21,12 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../../users/entities/user.entity");
 const user_status_enum_1 = require("../../common/enums/user-status.enum");
+const business_entity_1 = require("../../business/entities/business.entity");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     configService;
     userRepository;
-    constructor(configService, userRepository) {
+    businessRepository;
+    constructor(configService, userRepository, businessRepository) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
                 (request) => request?.cookies?.access_token || null,
@@ -35,6 +37,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         });
         this.configService = configService;
         this.userRepository = userRepository;
+        this.businessRepository = businessRepository;
     }
     async validate(payload) {
         const user = await this.userRepository.findOne({
@@ -47,12 +50,22 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         if (user.status !== user_status_enum_1.UserStatus.ACTIVE) {
             throw new common_1.UnauthorizedException('User is inactive');
         }
+        let businessId = user.businessId;
+        if (!businessId) {
+            const business = await this.businessRepository.findOne({
+                where: { adminId: user.id },
+            });
+            if (business) {
+                businessId = business.id;
+                await this.userRepository.update(user.id, { businessId: business.id });
+            }
+        }
         return {
             id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,
-            businessId: user.businessId,
+            businessId,
             business: user.business,
             permissions: user.permissions || [],
         };
@@ -62,7 +75,9 @@ exports.JwtStrategy = JwtStrategy;
 exports.JwtStrategy = JwtStrategy = __decorate([
     (0, common_1.Injectable)(),
     __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(2, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
     __metadata("design:paramtypes", [config_1.ConfigService,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], JwtStrategy);
 //# sourceMappingURL=jwt.strategy.js.map

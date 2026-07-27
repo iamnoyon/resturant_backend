@@ -1,10 +1,12 @@
 import { Repository } from 'typeorm';
 import { Business } from './entities/business.entity';
+import { User } from '../users/entities/user.entity';
 import { UpsertBusinessDto } from './dto/upsert-business.dto';
 import { PaginationQueryDto, PaginatedResult } from '../common/dto/pagination.dto';
 export declare class BusinessService {
     private businessRepository;
-    constructor(businessRepository: Repository<Business>);
+    private userRepository;
+    constructor(businessRepository: Repository<Business>, userRepository: Repository<User>);
     upsert(upsertBusinessDto: UpsertBusinessDto, currentUser: any): Promise<{
         success: boolean;
         message: string;

@@ -24,6 +24,9 @@ let ExpenseService = class ExpenseService {
         this.expenseRepository = expenseRepository;
     }
     async create(createExpenseDto, currentUser) {
+        if (!currentUser.businessId) {
+            throw new common_1.BadRequestException('You must create a restaurant first');
+        }
         const expense = this.expenseRepository.create({
             ...createExpenseDto,
             businessId: currentUser.businessId,
@@ -39,10 +42,9 @@ let ExpenseService = class ExpenseService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         if (query.search) {
@@ -64,11 +66,9 @@ let ExpenseService = class ExpenseService {
         const expense = await this.expenseRepository.findOne({ where: { id } });
         if (!expense)
             throw new common_1.NotFoundException('Expense not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            expense.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             expense.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -78,11 +78,9 @@ let ExpenseService = class ExpenseService {
         const expense = await this.expenseRepository.findOne({ where: { id } });
         if (!expense)
             throw new common_1.NotFoundException('Expense not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            expense.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             expense.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -94,11 +92,9 @@ let ExpenseService = class ExpenseService {
         const expense = await this.expenseRepository.findOne({ where: { id } });
         if (!expense)
             throw new common_1.NotFoundException('Expense not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            expense.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             expense.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }

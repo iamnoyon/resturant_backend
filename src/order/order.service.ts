@@ -27,6 +27,9 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto, currentUser: any) {
+    if (!currentUser.businessId) {
+      throw new BadRequestException('You must create a restaurant first');
+    }
     const now = new Date();
     const dateStr =
       now.getFullYear().toString() +
@@ -73,10 +76,10 @@ export class OrderService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.ADMIN
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      where.createdBy = currentUser.id;
-    } else if (currentUser.role === Role.CASHIER) {
       where.businessId = currentUser.businessId;
     }
 
@@ -107,13 +110,9 @@ export class OrderService {
     });
     if (!order) throw new NotFoundException('Order not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      order.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       order.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -125,13 +124,9 @@ export class OrderService {
     const order = await this.orderRepository.findOne({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      order.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       order.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -145,13 +140,9 @@ export class OrderService {
     const order = await this.orderRepository.findOne({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      order.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       order.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -181,13 +172,9 @@ export class OrderService {
     const order = await this.orderRepository.findOne({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      order.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       order.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');

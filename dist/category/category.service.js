@@ -24,6 +24,9 @@ let CategoryService = class CategoryService {
         this.categoryRepository = categoryRepository;
     }
     async create(createCategoryDto, currentUser) {
+        if (!currentUser.businessId) {
+            throw new common_1.BadRequestException('You must create a restaurant first');
+        }
         const category = this.categoryRepository.create({
             ...createCategoryDto,
             businessId: currentUser.businessId,
@@ -39,10 +42,9 @@ let CategoryService = class CategoryService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         if (query.search) {
@@ -64,11 +66,9 @@ let CategoryService = class CategoryService {
         const category = await this.categoryRepository.findOne({ where: { id } });
         if (!category)
             throw new common_1.NotFoundException('Category not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            category.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             category.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -78,11 +78,9 @@ let CategoryService = class CategoryService {
         const category = await this.categoryRepository.findOne({ where: { id } });
         if (!category)
             throw new common_1.NotFoundException('Category not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            category.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             category.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -92,10 +90,9 @@ let CategoryService = class CategoryService {
     }
     async dropdown(currentUser) {
         const where = { isActive: true };
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         const data = await this.categoryRepository.find({
@@ -109,11 +106,9 @@ let CategoryService = class CategoryService {
         const category = await this.categoryRepository.findOne({ where: { id } });
         if (!category)
             throw new common_1.NotFoundException('Category not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            category.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             category.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }

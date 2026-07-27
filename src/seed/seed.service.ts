@@ -4,11 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
-import { Business } from '../business/entities/business.entity';
 import { Permission } from '../permissions/entities/permission.entity';
 import { Role } from '../common/enums/role.enum';
 import { UserStatus } from '../common/enums/user-status.enum';
-import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { PERMISSIONS_LIST } from '../permissions/permissions.constants';
 
 @Injectable()
@@ -16,8 +14,6 @@ export class SeedService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(Business)
-    private businessRepository: Repository<Business>,
     @InjectRepository(Permission)
     private permissionRepository: Repository<Permission>,
     private configService: ConfigService,
@@ -48,11 +44,10 @@ export class SeedService implements OnModuleInit {
     const userCount = await this.userRepository.count();
     if (userCount > 0) {
       console.log('[Seed] Users already exist, skipping user seed.');
-      await this.ensureAdminHasPermissions();
       return;
     }
 
-    console.log('[Seed] No users found. Seeding superadmin and admin...');
+    console.log('[Seed] No users found. Seeding superadmin...');
 
     const superadminPassword = await bcrypt.hash(
       this.configService.get<string>('SUPERADMIN_PASSWORD', 'Super@123'),
@@ -73,80 +68,6 @@ export class SeedService implements OnModuleInit {
 
     const savedSuperadmin = await this.userRepository.save(superadmin);
     console.log(`[Seed] Superadmin created: ${savedSuperadmin.email}`);
-
-    const allPermissionNames = await this.getAllPermissionNames();
-    const adminPermissionNames = await this.getAdminPermissionNames();
-
-    const adminPassword = await bcrypt.hash(
-      this.configService.get<string>('ADMIN_PASSWORD', 'Admin@123'),
-      10,
-    );
-
-    const admin = this.userRepository.create({
-      name: this.configService.get<string>('ADMIN_NAME', 'Admin'),
-      email: this.configService.get<string>(
-        'ADMIN_EMAIL',
-        'admin@restaurant.com',
-      ),
-      phone: this.configService.get<string>('ADMIN_PHONE', '01700000001'),
-      password: adminPassword,
-      role: Role.ADMIN,
-      status: UserStatus.ACTIVE,
-      createdBy: savedSuperadmin.id,
-      permissions: adminPermissionNames,
-    } as unknown as User);
-
-    const savedAdmin = await this.userRepository.save(admin);
-
-    const business = this.businessRepository.create({
-      businessName: 'Default Restaurant',
-      area: 'Main Area',
-      adminId: savedAdmin.id,
-      subscription: SubscriptionStatus.ACTIVE,
-    } as unknown as Business);
-
-    const savedBusiness = await this.businessRepository.save(business);
-
-    savedAdmin.businessId = savedBusiness.id;
-    await this.userRepository.save(savedAdmin);
-
-    console.log(`[Seed] Admin created: ${savedAdmin.email}`);
     console.log('[Seed] Seeding completed.');
-  }
-
-  private async getAdminPermissionNames(): Promise<string[]> {
-    await this.seedPermissions();
-    const permissions = await this.permissionRepository.find();
-    return permissions
-      .filter((p) => !p.name.startsWith('package:'))
-      .map((p) => p.name);
-  }
-
-  private async getAllPermissionNames(): Promise<string[]> {
-    await this.seedPermissions();
-    const permissions = await this.permissionRepository.find();
-    return permissions.map((p) => p.name);
-  }
-
-  private async ensureAdminHasPermissions() {
-    await this.seedPermissions();
-    const admins = await this.userRepository.find({
-      where: { role: Role.ADMIN },
-    });
-
-    const adminPermissionNames = await this.getAdminPermissionNames();
-    if (adminPermissionNames.length === 0) {
-      console.log('[Seed] No permissions found, skipping admin assignment.');
-      return;
-    }
-
-    for (const admin of admins) {
-      if (!admin.permissions || admin.permissions.length === 0) {
-        admin.permissions = adminPermissionNames;
-        admin.updatedBy = admin.createdBy || admin.id;
-        await this.userRepository.save(admin);
-        console.log(`[Seed] Assigned ${adminPermissionNames.length} permissions to admin: ${admin.email}`);
-      }
-    }
   }
 }

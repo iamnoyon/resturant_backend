@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
@@ -22,6 +23,9 @@ export class TableService {
   ) {}
 
   async create(createTableDto: CreateTableDto, currentUser: any) {
+    if (!currentUser.businessId) {
+      throw new BadRequestException('You must create a restaurant first');
+    }
     const table = this.tableRepository.create({
       ...createTableDto,
       businessId: currentUser.businessId,
@@ -43,10 +47,10 @@ export class TableService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.ADMIN
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      where.createdBy = currentUser.id;
-    } else if (currentUser.role === Role.CASHIER) {
       where.businessId = currentUser.businessId;
     }
     if (query.search) {
@@ -71,13 +75,9 @@ export class TableService {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      table.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       table.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -89,13 +89,9 @@ export class TableService {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      table.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       table.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -108,10 +104,10 @@ export class TableService {
   async dropdown(currentUser: any) {
     const where: any = { isActive: true };
     if (
-      currentUser.role === Role.ADMIN
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      where.createdBy = currentUser.id;
-    } else if (currentUser.role === Role.CASHIER) {
       where.businessId = currentUser.businessId;
     }
 
@@ -128,13 +124,9 @@ export class TableService {
     const table = await this.tableRepository.findOne({ where: { id } });
     if (!table) throw new NotFoundException('Table not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      table.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       table.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');

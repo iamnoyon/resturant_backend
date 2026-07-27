@@ -24,6 +24,9 @@ let ProductService = class ProductService {
         this.productRepository = productRepository;
     }
     async create(createProductDto, currentUser) {
+        if (!currentUser.businessId) {
+            throw new common_1.BadRequestException('You must create a restaurant first');
+        }
         const product = this.productRepository.create({
             ...createProductDto,
             businessId: currentUser.businessId,
@@ -39,10 +42,9 @@ let ProductService = class ProductService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         if (query.search) {
@@ -76,11 +78,9 @@ let ProductService = class ProductService {
         });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            product.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             product.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -96,11 +96,9 @@ let ProductService = class ProductService {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            product.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             product.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -110,10 +108,9 @@ let ProductService = class ProductService {
     }
     async dropdown(currentUser) {
         const where = { isActive: true };
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         const data = await this.productRepository.find({
@@ -131,10 +128,9 @@ let ProductService = class ProductService {
     }
     async findByCategory(categoryId, currentUser) {
         const where = { isActive: true, categoryId };
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         const products = await this.productRepository.find({
@@ -156,11 +152,9 @@ let ProductService = class ProductService {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            product.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             product.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -173,11 +167,9 @@ let ProductService = class ProductService {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            product.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             product.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }

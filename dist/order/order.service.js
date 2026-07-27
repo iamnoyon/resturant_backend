@@ -28,6 +28,9 @@ let OrderService = class OrderService {
         this.productRepository = productRepository;
     }
     async create(createOrderDto, currentUser) {
+        if (!currentUser.businessId) {
+            throw new common_1.BadRequestException('You must create a restaurant first');
+        }
         const now = new Date();
         const dateStr = now.getFullYear().toString() +
             (now.getMonth() + 1).toString().padStart(2, '0') +
@@ -63,10 +66,9 @@ let OrderService = class OrderService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         const [data, total] = await this.orderRepository.findAndCount({
@@ -93,11 +95,9 @@ let OrderService = class OrderService {
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            order.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             order.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -107,11 +107,9 @@ let OrderService = class OrderService {
         const order = await this.orderRepository.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            order.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             order.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -123,11 +121,9 @@ let OrderService = class OrderService {
         const order = await this.orderRepository.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            order.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             order.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -154,11 +150,9 @@ let OrderService = class OrderService {
         const order = await this.orderRepository.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            order.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             order.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }

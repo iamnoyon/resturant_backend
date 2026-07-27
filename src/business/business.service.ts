@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Business } from './entities/business.entity';
+import { User } from '../users/entities/user.entity';
 import { UpsertBusinessDto } from './dto/upsert-business.dto';
 import {
   PaginationQueryDto,
@@ -18,6 +19,8 @@ export class BusinessService {
   constructor(
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   async upsert(upsertBusinessDto: UpsertBusinessDto, currentUser: any) {
@@ -36,6 +39,9 @@ export class BusinessService {
       adminId: currentUser.id,
     });
     const saved = await this.businessRepository.save(business);
+
+    await this.userRepository.update(currentUser.id, { businessId: saved.id });
+
     return { success: true, message: 'Business created', data: saved };
   }
 

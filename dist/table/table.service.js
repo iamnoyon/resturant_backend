@@ -24,6 +24,9 @@ let TableService = class TableService {
         this.tableRepository = tableRepository;
     }
     async create(createTableDto, currentUser) {
+        if (!currentUser.businessId) {
+            throw new common_1.BadRequestException('You must create a restaurant first');
+        }
         const table = this.tableRepository.create({
             ...createTableDto,
             businessId: currentUser.businessId,
@@ -39,10 +42,9 @@ let TableService = class TableService {
         const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
         const sortBy = query.sortBy || 'createdAt';
         const where = {};
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         if (query.search) {
@@ -64,11 +66,9 @@ let TableService = class TableService {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            table.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             table.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -78,11 +78,9 @@ let TableService = class TableService {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            table.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             table.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }
@@ -92,10 +90,9 @@ let TableService = class TableService {
     }
     async dropdown(currentUser) {
         const where = { isActive: true };
-        if (currentUser.role === role_enum_1.Role.ADMIN) {
-            where.createdBy = currentUser.id;
-        }
-        else if (currentUser.role === role_enum_1.Role.CASHIER) {
+        if (currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) {
             where.businessId = currentUser.businessId;
         }
         const data = await this.tableRepository.find({
@@ -109,11 +106,9 @@ let TableService = class TableService {
         const table = await this.tableRepository.findOne({ where: { id } });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
-        if ((currentUser.role === role_enum_1.Role.ADMIN) &&
-            table.createdBy !== currentUser.id) {
-            throw new common_1.ForbiddenException('Access denied');
-        }
-        if (currentUser.role === role_enum_1.Role.CASHIER &&
+        if ((currentUser.role === role_enum_1.Role.ADMIN ||
+            currentUser.role === role_enum_1.Role.CASHIER ||
+            currentUser.role === role_enum_1.Role.WAITER) &&
             table.businessId !== currentUser.businessId) {
             throw new common_1.ForbiddenException('Access denied');
         }

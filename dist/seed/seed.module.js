@@ -11,14 +11,13 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const seed_service_1 = require("./seed.service");
 const user_entity_1 = require("../users/entities/user.entity");
-const business_entity_1 = require("../business/entities/business.entity");
 const permission_entity_1 = require("../permissions/entities/permission.entity");
 let SeedModule = class SeedModule {
 };
 exports.SeedModule = SeedModule;
 exports.SeedModule = SeedModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, business_entity_1.Business, permission_entity_1.Permission])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, permission_entity_1.Permission])],
         providers: [seed_service_1.SeedService],
     })
 ], SeedModule);

@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import type { Request } from 'express';
 import { User } from '../../users/entities/user.entity';
 import { UserStatus } from '../../common/enums/user-status.enum';
+import { Business } from '../../business/entities/business.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,6 +15,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Business)
+    private businessRepository: Repository<Business>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -39,12 +42,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User is inactive');
     }
 
+    let businessId = user.businessId;
+    if (!businessId) {
+      const business = await this.businessRepository.findOne({
+        where: { adminId: user.id },
+      });
+      if (business) {
+        businessId = business.id;
+        await this.userRepository.update(user.id, { businessId: business.id });
+      }
+    }
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
-      businessId: user.businessId,
+      businessId,
       business: user.business,
       permissions: user.permissions || [],
     };

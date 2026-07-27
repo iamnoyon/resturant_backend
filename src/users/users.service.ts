@@ -187,6 +187,8 @@ export class UsersService {
       user.profileImageUrl = (updateUserDto as any).profileImageUrl;
     if ((updateUserDto as any).status !== undefined)
       user.status = (updateUserDto as any).status;
+    if ((updateUserDto as any).businessId !== undefined)
+      user.businessId = (updateUserDto as any).businessId;
     const saved = await this.userRepository.save(user);
     const { password, ...result } = saved;
     return {

@@ -210,6 +210,8 @@ let UsersService = class UsersService {
             user.profileImageUrl = updateUserDto.profileImageUrl;
         if (updateUserDto.status !== undefined)
             user.status = updateUserDto.status;
+        if (updateUserDto.businessId !== undefined)
+            user.businessId = updateUserDto.businessId;
         const saved = await this.userRepository.save(user);
         const { password, ...result } = saved;
         return {

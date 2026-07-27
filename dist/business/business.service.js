@@ -17,11 +17,14 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const business_entity_1 = require("./entities/business.entity");
+const user_entity_1 = require("../users/entities/user.entity");
 const role_enum_1 = require("../common/enums/role.enum");
 let BusinessService = class BusinessService {
     businessRepository;
-    constructor(businessRepository) {
+    userRepository;
+    constructor(businessRepository, userRepository) {
         this.businessRepository = businessRepository;
+        this.userRepository = userRepository;
     }
     async upsert(upsertBusinessDto, currentUser) {
         const existing = await this.businessRepository.findOne({
@@ -37,6 +40,7 @@ let BusinessService = class BusinessService {
             adminId: currentUser.id,
         });
         const saved = await this.businessRepository.save(business);
+        await this.userRepository.update(currentUser.id, { businessId: saved.id });
         return { success: true, message: 'Business created', data: saved };
     }
     async findAll(query, currentUser) {
@@ -95,6 +99,8 @@ exports.BusinessService = BusinessService;
 exports.BusinessService = BusinessService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], BusinessService);
 //# sourceMappingURL=business.service.js.map

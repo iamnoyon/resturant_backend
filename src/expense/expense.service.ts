@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
@@ -22,6 +23,9 @@ export class ExpenseService {
   ) {}
 
   async create(createExpenseDto: CreateExpenseDto, currentUser: any) {
+    if (!currentUser.businessId) {
+      throw new BadRequestException('You must create a restaurant first');
+    }
     const expense = this.expenseRepository.create({
       ...createExpenseDto,
       businessId: currentUser.businessId,
@@ -43,10 +47,10 @@ export class ExpenseService {
 
     const where: any = {};
     if (
-      currentUser.role === Role.ADMIN
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      where.createdBy = currentUser.id;
-    } else if (currentUser.role === Role.CASHIER) {
       where.businessId = currentUser.businessId;
     }
     if (query.search) {
@@ -71,13 +75,9 @@ export class ExpenseService {
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) throw new NotFoundException('Expense not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      expense.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       expense.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -93,13 +93,9 @@ export class ExpenseService {
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) throw new NotFoundException('Expense not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      expense.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       expense.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -113,13 +109,9 @@ export class ExpenseService {
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) throw new NotFoundException('Expense not found');
     if (
-      (currentUser.role === Role.ADMIN) &&
-      expense.createdBy !== currentUser.id
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-    if (
-      currentUser.role === Role.CASHIER &&
+      (currentUser.role === Role.ADMIN ||
+        currentUser.role === Role.CASHIER ||
+        currentUser.role === Role.WAITER) &&
       expense.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
