@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { Product } from '../product/entities/product.entity';
+import { Business } from '../business/entities/business.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../common/dto/pagination.dto';
 import { Role } from '../common/enums/role.enum';
 import { BillStatus } from '../common/enums/bill-status.enum';
+import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 
 @Injectable()
 export class OrderService {
@@ -24,11 +26,20 @@ export class OrderService {
     private orderRepository: Repository<Order>,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    @InjectRepository(Business)
+    private businessRepository: Repository<Business>,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, currentUser: any) {
     if (!currentUser.businessId) {
       throw new BadRequestException('You must create a restaurant first');
+    }
+
+    const business = await this.businessRepository.findOne({
+      where: { id: currentUser.businessId },
+    });
+    if (business?.subscription !== SubscriptionStatus.ACTIVE) {
+      throw new BadRequestException('Subscription expired. Renew ASAP to continue');
     }
     const now = new Date();
     const dateStr =

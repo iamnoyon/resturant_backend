@@ -18,18 +18,28 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const order_entity_1 = require("./entities/order.entity");
 const product_entity_1 = require("../product/entities/product.entity");
+const business_entity_1 = require("../business/entities/business.entity");
 const role_enum_1 = require("../common/enums/role.enum");
 const bill_status_enum_1 = require("../common/enums/bill-status.enum");
+const subscription_status_enum_1 = require("../common/enums/subscription-status.enum");
 let OrderService = class OrderService {
     orderRepository;
     productRepository;
-    constructor(orderRepository, productRepository) {
+    businessRepository;
+    constructor(orderRepository, productRepository, businessRepository) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.businessRepository = businessRepository;
     }
     async create(createOrderDto, currentUser) {
         if (!currentUser.businessId) {
             throw new common_1.BadRequestException('You must create a restaurant first');
+        }
+        const business = await this.businessRepository.findOne({
+            where: { id: currentUser.businessId },
+        });
+        if (business?.subscription !== subscription_status_enum_1.SubscriptionStatus.ACTIVE) {
+            throw new common_1.BadRequestException('Subscription expired. Renew ASAP to continue');
         }
         const now = new Date();
         const dateStr = now.getFullYear().toString() +
@@ -171,7 +181,9 @@ exports.OrderService = OrderService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(order_entity_1.Order)),
     __param(1, (0, typeorm_1.InjectRepository)(product_entity_1.Product)),
+    __param(2, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], OrderService);
 //# sourceMappingURL=order.service.js.map
