@@ -40,7 +40,7 @@ export class AuthService {
 
     if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException(
-        'Your account is inactive. Please contact admin.',
+        'Your account is not active. Please contact admin.',
       );
     }
 

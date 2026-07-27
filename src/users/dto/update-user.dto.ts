@@ -6,7 +6,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiPropertyOptional({
     example: 'active',
     description: 'Account status',
-    enum: ['active', 'inactive'],
+    enum: ['active', 'inactive', 'suspended'],
   })
   status?: string;
 }

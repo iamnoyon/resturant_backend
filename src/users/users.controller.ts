@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -61,6 +62,16 @@ export class UsersController {
     @CurrentUser() currentUser: any,
   ) {
     return this.usersService.update(+id, updateUserDto, currentUser);
+  }
+
+  @Patch(':id/status')
+  @RequirePermissions('user:update')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateUserStatusDto: UpdateUserStatusDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.usersService.updateStatus(+id, updateUserStatusDto, currentUser);
   }
 
   @Delete(':id')

@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import {
   PaginationQueryDto,
   PaginatedResult,
@@ -207,6 +208,40 @@ export class UsersService {
     return {
       success: true,
       message: 'User updated successfully',
+      data: result,
+    };
+  }
+
+  async updateStatus(id: number, dto: UpdateUserStatusDto, currentUser: any) {
+    if (!Object.values(UserStatus).includes(dto.status as UserStatus)) {
+      throw new BadRequestException(
+        `Invalid status. Valid values: ${Object.values(UserStatus).join(', ')}`,
+      );
+    }
+
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+
+    if (user.role === Role.SUPERADMIN) {
+      throw new BadRequestException('Cannot change status of superadmin');
+    }
+
+    if (currentUser.role === Role.ADMIN) {
+      if (user.createdBy !== currentUser.id)
+        throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.CASHIER) {
+      throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.WAITER) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    user.status = dto.status as UserStatus;
+    user.updatedBy = currentUser.id;
+    const saved = await this.userRepository.save(user);
+    const { password, ...result } = saved;
+    return {
+      success: true,
+      message: `User status updated to ${dto.status}`,
       data: result,
     };
   }

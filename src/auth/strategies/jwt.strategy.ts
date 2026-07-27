@@ -39,7 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     if (user.status !== UserStatus.ACTIVE) {
-      throw new UnauthorizedException('User is inactive');
+      throw new UnauthorizedException('User account is not active');
     }
 
     let businessId = user.businessId;
