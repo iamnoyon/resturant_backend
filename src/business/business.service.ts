@@ -13,6 +13,7 @@ import {
   PaginatedResult,
 } from '../common/dto/pagination.dto';
 import { Role } from '../common/enums/role.enum';
+import { UpdateStatusDto } from './dto/update-status.dto';
 
 @Injectable()
 export class BusinessService {
@@ -56,9 +57,7 @@ export class BusinessService {
     const sortBy = query.sortBy || 'createdAt';
 
     const where: any = {};
-    if (
-      currentUser.role === Role.ADMIN
-    ) {
+    if (currentUser.role === Role.ADMIN) {
       where.adminId = currentUser.id;
     }
     if (query.search) {
@@ -103,5 +102,62 @@ export class BusinessService {
       throw new ForbiddenException('Access denied');
     await this.businessRepository.remove(business);
     return { success: true, message: 'Business removed' };
+  }
+
+  async findBusinessList(
+    query: PaginationQueryDto,
+    currentUser: any,
+  ): Promise<PaginatedResult<Business>> {
+    if (currentUser.role != Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const page = Math.max(+(query.page || 1), 1);
+    const limit = Math.min(Math.max(+(query.limit || 10), 1), 100);
+    const skip = (page - 1) * limit;
+    const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
+    const sortBy = query.sortBy || 'createdAt';
+
+    const [data, total] = await this.businessRepository.findAndCount({
+      skip,
+      take: limit,
+      order: { [sortBy]: sortOrder },
+    });
+
+    return {
+      success: true,
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async findByID(id: number, currentUser: any) {
+    if (currentUser.role != Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+    const business = await this.businessRepository.findOne({ where: { id } });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+    return { success: true, data: business };
+  }
+
+  async updateById(
+    id: number,
+    updateBusinessData: UpdateStatusDto,
+    currentUser: any,
+  ) {
+    if (currentUser.role != Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+    const business = await this.businessRepository.findOne({ where: { id } });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    business.subscription = updateBusinessData.subscription;
+    await this.businessRepository.save(business);
+
+    return { success: true, message: 'Business updated!', data: business };
   }
 }
