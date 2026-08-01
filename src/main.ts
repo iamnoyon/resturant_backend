@@ -15,7 +15,11 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://127.0.0.1:3001'],
+    origin: [
+      'http://localhost:3001',
+      'http://127.0.0.1:3001',
+      'https://cloud-cafe-a259r5plo-noyon-sarkers-projects.vercel.app/',
+    ],
     credentials: true,
   });
 
