@@ -5,10 +5,8 @@ import {
   Patch,
   Body,
   UseGuards,
-  Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -22,24 +20,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async login(@Body() loginDto: LoginDto) {
     const { token, userData } = await this.authService.login(loginDto);
-
-    // response.cookie('access_token', token, {
-    //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: 'none',
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,
-    //   path: '/',
-    // });
 
     return {
       success: true,
       message: 'Login successful',
-      token: token,
+      token,
       data: { user: userData },
     };
   }
@@ -79,13 +66,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Res({ passthrough: true }) response: Response) {
-    response.clearCookie('access_token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-    });
+  async logout() {
     return { success: true, message: 'Logged out successfully' };
   }
 }

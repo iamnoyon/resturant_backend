@@ -4,15 +4,12 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
-
-  app.use(cookieParser());
 
   const frontendUrl = configService.get<string>(
     'FRONTEND_URL',
@@ -38,7 +35,6 @@ async function bootstrap() {
     .setDescription('API documentation for the Restaurant Management System')
     .setVersion('1.0')
     .addBearerAuth()
-    .addCookieAuth('access_token')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
