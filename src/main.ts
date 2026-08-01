@@ -14,12 +14,17 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  const frontendUrl = configService.get<string>(
+    'FRONTEND_URL',
+    'http://localhost:3001',
+  );
+
   app.enableCors({
     origin: [
       'http://localhost:3001',
       'http://127.0.0.1:3001',
-      'https://cloud-cafe-a259r5plo-noyon-sarkers-projects.vercel.app/',
-    ],
+      frontendUrl,
+    ].filter(Boolean),
     credentials: true,
   });
 
