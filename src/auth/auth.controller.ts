@@ -28,17 +28,18 @@ export class AuthController {
   ) {
     const { token, userData } = await this.authService.login(loginDto);
 
-    response.cookie('access_token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
+    // response.cookie('access_token', token, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: 'none',
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    //   path: '/',
+    // });
 
     return {
       success: true,
       message: 'Login successful',
+      token: token,
       data: { user: userData },
     };
   }
