@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -23,18 +27,25 @@ export class PaymentService {
     private businessRepository: Repository<Business>,
     private configService: ConfigService,
   ) {
-    const isSandbox = this.configService.get<string>('SSLCZ_SANDBOX', 'true') === 'true';
+    const isSandbox =
+      this.configService.get<string>('SSLCZ_SANDBOX', 'true') === 'true';
     this.sslcommerzBaseUrl = isSandbox
       ? 'https://sandbox.sslcommerz.com'
       : 'https://secure.sslcommerz.com';
     this.storeId = this.configService.get<string>('SSLCZ_STORE_ID', '');
-    this.storePassword = this.configService.get<string>('SSLCZ_STORE_PASSWORD', '');
+    this.storePassword = this.configService.get<string>(
+      'SSLCZ_STORE_PASSWORD',
+      '',
+    );
   }
 
   async initiate(currentUser: any, packageId: number) {
-    const pkg = await this.packageRepository.findOne({ where: { id: packageId } });
+    const pkg = await this.packageRepository.findOne({
+      where: { id: packageId },
+    });
     if (!pkg) throw new NotFoundException('Package not found');
-    if (pkg.status !== 'active') throw new BadRequestException('Package is not active');
+    if (pkg.status !== 'active')
+      throw new BadRequestException('Package is not active');
 
     let businessId = currentUser.businessId;
     let business = businessId
@@ -45,7 +56,8 @@ export class PaymentService {
       business = await this.businessRepository.findOne({
         where: { adminId: currentUser.id },
       });
-      if (!business) throw new BadRequestException('No business associated with this user');
+      if (!business)
+        throw new BadRequestException('No business associated with this user');
       businessId = business.id;
     }
 
@@ -59,9 +71,14 @@ export class PaymentService {
       status: PaymentStatus.PENDING,
       adminId: currentUser.id,
     } as any);
-    const savedPayment = await this.paymentRepository.save(payment) as unknown as Payment;
+    const savedPayment = (await this.paymentRepository.save(
+      payment,
+    )) as unknown as Payment;
 
-    const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:8001');
+    const appUrl = this.configService.get<string>(
+      'APP_URL',
+      'http://localhost:8001',
+    );
 
     const postData = new URLSearchParams();
     postData.append('store_id', this.storeId);
@@ -95,7 +112,9 @@ export class PaymentService {
         savedPayment.status = PaymentStatus.FAIL;
         savedPayment.gatewayData = response.data;
         await this.paymentRepository.save(savedPayment);
-        throw new BadRequestException(response.data.failedreason || 'SSLCommerz initiation failed');
+        throw new BadRequestException(
+          response.data.failedreason || 'SSLCommerz initiation failed',
+        );
       }
 
       savedPayment.gatewayData = response.data;
@@ -109,15 +128,24 @@ export class PaymentService {
         },
       };
     } catch (err: any) {
-      if (err instanceof BadRequestException || err instanceof NotFoundException) throw err;
-      throw new BadRequestException('Payment gateway error: ' + (err.message || 'Unknown error'));
+      if (
+        err instanceof BadRequestException ||
+        err instanceof NotFoundException
+      )
+        throw err;
+      throw new BadRequestException(
+        'Payment gateway error: ' + (err.message || 'Unknown error'),
+      );
     }
   }
 
   async handleSuccess(tranId: string, valId?: string) {
-    const payment = await this.paymentRepository.findOne({ where: { transactionId: tranId } });
+    const payment = await this.paymentRepository.findOne({
+      where: { transactionId: tranId },
+    });
     if (!payment) return { success: false, message: 'Invalid transaction' };
-    if (payment.status === PaymentStatus.SUCCESS) return { success: true, message: 'Already processed' };
+    if (payment.status === PaymentStatus.SUCCESS)
+      return { success: true, message: 'Already processed' };
 
     try {
       const validateId = valId || payment.gatewayData?.val_id;
@@ -151,13 +179,22 @@ export class PaymentService {
         await this.paymentRepository.save(payment);
       }
 
-      const pkg = await this.packageRepository.findOne({ where: { id: payment.packageId } });
+      const pkg = await this.packageRepository.findOne({
+        where: { id: payment.packageId },
+      });
       if (!pkg) return { success: false, message: 'Package not found' };
 
-      const business = await this.businessRepository.findOne({ where: { id: payment.businessId } });
+      const business = await this.businessRepository.findOne({
+        where: { id: payment.businessId },
+      });
       if (business) {
         const now = new Date();
-        const endDate = new Date(now);
+        const hasActiveSub =
+          business.subscription === SubscriptionStatus.ACTIVE &&
+          business.subEndDate &&
+          new Date(business.subEndDate) > now;
+        const baseDate = hasActiveSub ? new Date(business.subEndDate!) : now;
+        const endDate = new Date(baseDate);
         endDate.setMonth(endDate.getMonth() + pkg.numberOfMonth);
 
         business.subscription = SubscriptionStatus.ACTIVE;
@@ -166,14 +203,44 @@ export class PaymentService {
         await this.businessRepository.save(business);
       }
 
-      return { success: true, message: 'Payment successful, subscription activated' };
+      return {
+        success: true,
+        message: 'Payment successful, subscription activated',
+        payment_success: true,
+      };
     } catch {
       return { success: false, message: 'Validation request failed' };
     }
   }
 
+  async getPaymentStatus(tranId: string) {
+    const payment = await this.paymentRepository.findOne({
+      where: { transactionId: tranId },
+    });
+    if (!payment) return { success: false, message: 'Transaction not found' };
+
+    const business = await this.businessRepository.findOne({
+      where: { id: payment.businessId },
+    });
+
+    return {
+      success: true,
+      data: {
+        status: payment.status,
+        amount: payment.amount,
+        transactionId: payment.transactionId,
+        businessId: payment.businessId,
+        subscriptionStatus: business?.subscription || null,
+        subStartDate: business?.subStartDate || null,
+        subEndDate: business?.subEndDate || null,
+      },
+    };
+  }
+
   async handleCancel(tranId: string) {
-    const payment = await this.paymentRepository.findOne({ where: { transactionId: tranId } });
+    const payment = await this.paymentRepository.findOne({
+      where: { transactionId: tranId },
+    });
     if (payment) {
       payment.status = PaymentStatus.CANCEL;
       await this.paymentRepository.save(payment);
@@ -182,7 +249,9 @@ export class PaymentService {
   }
 
   async handleFail(tranId: string) {
-    const payment = await this.paymentRepository.findOne({ where: { transactionId: tranId } });
+    const payment = await this.paymentRepository.findOne({
+      where: { transactionId: tranId },
+    });
     if (payment) {
       payment.status = PaymentStatus.FAIL;
       await this.paymentRepository.save(payment);
