@@ -64,6 +64,7 @@ export class UploadController {
     }),
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file uploaded');
     return this.cloudinaryService.uploadImage(file);
   }
 

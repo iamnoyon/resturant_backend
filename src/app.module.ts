@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
@@ -14,6 +14,7 @@ import { UploadModule } from './upload/upload.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { PackageModule } from './package/package.module';
 import { PaymentModule } from './payment/payment.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -69,4 +70,8 @@ import { PaymentModule } from './payment/payment.module';
     PaymentModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

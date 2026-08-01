@@ -16,15 +16,18 @@ export class CloudinaryService {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'resturant-uploads',
-          allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
           public_id: `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
           transformation: [
             { width: 1200, height: 1200, crop: 'limit', quality: 'auto' },
           ],
         },
         (error, result) => {
-          if (error || !result) reject(error || new Error('Upload failed'));
-          else resolve(result);
+          if (error) {
+            console.error('Cloudinary error:', error.message);
+            reject(error);
+          } else if (!result) {
+            reject(new Error('Upload failed'));
+          } else resolve(result);
         },
       );
       uploadStream.end(file.buffer);
