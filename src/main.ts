@@ -4,9 +4,6 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { join } from 'path';
-import * as express from 'express';
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
@@ -27,8 +24,6 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.setGlobalPrefix('api');
-
-  app.use('/api/uploads', express.static(join(__dirname, '..', 'uploads')));
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Restaurant Management API')

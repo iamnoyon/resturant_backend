@@ -1,20 +1,34 @@
 import {
   Controller,
   Post,
+  Delete,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
+  BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import * as crypto from 'crypto';
-import { ApiTags, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiConsumes,
+  ApiBody,
+  ApiOperation,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CloudinaryService } from './cloudinary.service';
+import { memoryStorage } from 'multer';
 
 @ApiTags('Upload')
 @Controller('upload')
 export class UploadController {
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
+
   @Post()
-  @ApiOperation({ summary: 'Upload an image file' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload an image file to Cloudinary' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -31,15 +45,7 @@ export class UploadController {
   })
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: join(process.cwd(), 'uploads'),
-        filename: (_req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + crypto.randomBytes(8).toString('hex');
-          const ext = extname(file.originalname);
-          callback(null, `${uniqueSuffix}${ext}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (_req, file, callback) => {
         const allowedMimes = [
           'image/jpeg',
@@ -51,17 +57,23 @@ export class UploadController {
         if (allowedMimes.includes(file.mimetype)) {
           callback(null, true);
         } else {
-          callback(new Error('Only image files are allowed'), false);
+          callback(new BadRequestException('Only image files are allowed'), false);
         }
       },
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const baseUrl = `${process.env.APP_URL || 'http://localhost:3001'}/api/uploads`;
-    return {
-      fileName: file.filename,
-      url: `${baseUrl}/${file.filename}`,
-    };
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.cloudinaryService.uploadImage(file);
+  }
+
+  @Delete(':publicId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete an image from Cloudinary' })
+  async deleteFile(@Param('publicId') publicId: string) {
+    const decodedPublicId = decodeURIComponent(publicId);
+    await this.cloudinaryService.deleteImage(decodedPublicId);
+    return { message: 'File deleted successfully' };
   }
 }
