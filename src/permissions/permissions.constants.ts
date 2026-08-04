@@ -236,4 +236,11 @@ export const PERMISSIONS_LIST = [
     module: 'package',
     action: 'delete',
   },
+
+  {
+    name: 'dashboard:read',
+    description: 'Access dashboard statistics',
+    module: 'dashboard',
+    action: 'read',
+  },
 ];

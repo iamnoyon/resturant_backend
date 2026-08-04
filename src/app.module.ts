@@ -15,6 +15,7 @@ import { UploadModule } from './upload/upload.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { PackageModule } from './package/package.module';
 import { PaymentModule } from './payment/payment.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
@@ -77,6 +78,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     PermissionsModule,
     PackageModule,
     PaymentModule,
+    DashboardModule,
   ],
 })
 export class AppModule implements NestModule {
