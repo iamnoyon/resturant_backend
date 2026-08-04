@@ -33,7 +33,11 @@ export class Business {
   @Column({ nullable: true })
   area: string;
 
-  @Column({ type: 'enum', enum: SubscriptionStatus, default: SubscriptionStatus.INACTIVE })
+  @Column({
+    type: 'enum',
+    enum: SubscriptionStatus,
+    default: SubscriptionStatus.INACTIVE,
+  })
   subscription: SubscriptionStatus;
 
   @Column({ type: 'date', nullable: true, name: 'sub_start_date' })

@@ -30,6 +30,10 @@ export class CreateOrderDto {
   })
   billStatus: BillStatus;
 
-  @ApiProperty({ example: 3, description: 'Waiter ID reference', required: false })
+  @ApiProperty({
+    example: 3,
+    description: 'Waiter ID reference',
+    required: false,
+  })
   waiterId?: number;
 }

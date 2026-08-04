@@ -20,6 +20,28 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CloudinaryService } from './cloudinary.service';
 import { memoryStorage } from 'multer';
 
+function validateMagicBytes(mimetype: string, magicBytes: Buffer): boolean {
+  const hex = magicBytes.toString('hex').toUpperCase();
+
+  if (mimetype === 'image/jpeg' || mimetype === 'image/jpg') {
+    return hex.startsWith('FFD8FF');
+  }
+
+  if (mimetype === 'image/png') {
+    return hex.startsWith('89504E470D0A1A0A');
+  }
+
+  if (mimetype === 'image/gif') {
+    return hex.startsWith('474946383761') || hex.startsWith('474946383961');
+  }
+
+  if (mimetype === 'image/webp') {
+    return hex.startsWith('52494646') && hex.slice(16, 24) === '57454250';
+  }
+
+  return false;
+}
+
 @ApiTags('Upload')
 @Controller('upload')
 export class UploadController {
@@ -52,13 +74,39 @@ export class UploadController {
           'image/png',
           'image/gif',
           'image/webp',
-          'image/svg+xml',
         ];
-        if (allowedMimes.includes(file.mimetype)) {
-          callback(null, true);
-        } else {
-          callback(new BadRequestException('Only image files are allowed'), false);
+
+        if (!allowedMimes.includes(file.mimetype)) {
+          callback(
+            new BadRequestException(
+              'Only image files (jpeg, png, gif, webp) are allowed',
+            ),
+            false,
+          );
+          return;
         }
+
+        const magicBytes = file.buffer?.slice(0, 12);
+        if (!magicBytes) {
+          callback(
+            new BadRequestException('Unable to validate file content'),
+            false,
+          );
+          return;
+        }
+
+        const valid = validateMagicBytes(file.mimetype, magicBytes);
+        if (!valid) {
+          callback(
+            new BadRequestException(
+              'File content does not match its declared type',
+            ),
+            false,
+          );
+          return;
+        }
+
+        callback(null, true);
       },
       limits: { fileSize: 5 * 1024 * 1024 },
     }),

@@ -39,7 +39,9 @@ export class OrderService {
       where: { id: currentUser.businessId },
     });
     if (business?.subscription !== SubscriptionStatus.ACTIVE) {
-      throw new BadRequestException('Subscription expired. Renew ASAP to continue');
+      throw new BadRequestException(
+        'Subscription expired. Renew ASAP to continue',
+      );
     }
     const now = new Date();
     const dateStr =

@@ -1,6 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { BusinessModule } from './business/business.module';
@@ -22,19 +23,27 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
+        const isProduction =
+          configService.get<string>('NODE_ENV') === 'production';
         const databaseUrl = configService.get<string>('DATABASE_URL');
         if (databaseUrl) {
           return {
             type: 'postgres' as const,
             url: databaseUrl,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true,
+            synchronize: !isProduction,
             ssl: {
-              rejectUnauthorized: false,
+              rejectUnauthorized: !isProduction,
             },
           };
         }
@@ -46,10 +55,10 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: true,
+          synchronize: !isProduction,
           ...(configService.get<string>('DB_SSL') === 'true' && {
             ssl: {
-              rejectUnauthorized: false,
+              rejectUnauthorized: !isProduction,
             },
           }),
         };

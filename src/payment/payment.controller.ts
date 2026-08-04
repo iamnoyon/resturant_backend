@@ -38,6 +38,8 @@ export class PaymentController {
   }
 
   @Get('status/:tranId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   status(@Param('tranId') tranId: string) {
     return this.paymentService.getPaymentStatus(tranId);
   }

@@ -36,7 +36,10 @@ export class PermissionsService implements OnModuleInit {
       order: { module: 'ASC', action: 'ASC' },
     });
 
-    const data = permissions.map((p) => ({ value: p.name, name: p.description }));
+    const data = permissions.map((p) => ({
+      value: p.name,
+      name: p.description,
+    }));
     return { success: true, data };
   }
 

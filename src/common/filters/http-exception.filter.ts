@@ -27,7 +27,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = message.join(', ');
       }
     } else if (exception instanceof Error) {
-      message = exception.message;
+      message =
+        process.env.NODE_ENV === 'development'
+          ? exception.message
+          : 'Internal server error';
     }
 
     response.status(status).json({
