@@ -31,9 +31,7 @@ export class SeedService implements OnModuleInit {
   private async seedPermissions() {
     const existingPerms = await this.permissionRepository.find();
     const existingNames = new Set(existingPerms.map((p) => p.name));
-    const newPerms = PERMISSIONS_LIST.filter(
-      (p) => !existingNames.has(p.name),
-    );
+    const newPerms = PERMISSIONS_LIST.filter((p) => !existingNames.has(p.name));
 
     if (newPerms.length === 0) {
       console.log('[Seed] All permissions exist, nothing to add.');
@@ -78,7 +76,9 @@ export class SeedService implements OnModuleInit {
           .filter(
             (p) =>
               p.module !== 'business' ||
-              (p.module === 'business' && p.action !== 'create' && p.action !== 'delete'),
+              (p.module === 'business' &&
+                p.action !== 'create' &&
+                p.action !== 'delete'),
           )
           .map((p) => p.name);
 

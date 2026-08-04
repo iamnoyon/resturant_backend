@@ -71,8 +71,7 @@ export class DashboardService {
     ]);
 
     const netProfit = current.totalRevenue - current.totalExpenses;
-    const previousNetProfit =
-      previous.totalRevenue - previous.totalExpenses;
+    const previousNetProfit = previous.totalRevenue - previous.totalExpenses;
 
     return {
       success: true,
@@ -81,10 +80,7 @@ export class DashboardService {
           current.totalRevenue,
           previous.totalRevenue,
         ),
-        totalOrders: this.withTrend(
-          current.totalOrders,
-          previous.totalOrders,
-        ),
+        totalOrders: this.withTrend(current.totalOrders, previous.totalOrders),
         totalExpenses: this.withTrend(
           current.totalExpenses,
           previous.totalExpenses,
@@ -313,8 +309,7 @@ export class DashboardService {
       totalOrders: orderCount,
       totalExpenses: Number(expenseResult?.total) || 0,
       pendingBillCount,
-      averageOrderValue:
-        Number(Number(avgOrderResult?.avg).toFixed(2)) || 0,
+      averageOrderValue: Number(Number(avgOrderResult?.avg).toFixed(2)) || 0,
       totalDiscount: Number(discountResult?.total) || 0,
       totalProducts,
       lowStockProducts,
@@ -322,10 +317,7 @@ export class DashboardService {
     };
   }
 
-  private withTrend(
-    current: number,
-    previous: number,
-  ): TrendIndicator {
+  private withTrend(current: number, previous: number): TrendIndicator {
     let change: number;
     let trend: 'up' | 'down' | 'stable';
 
