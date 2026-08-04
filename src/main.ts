@@ -5,7 +5,6 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 async function bootstrap() {
@@ -31,8 +30,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  app.useGlobalGuards(app.get(ThrottlerGuard));
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.setGlobalPrefix('api');
