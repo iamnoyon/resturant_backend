@@ -17,6 +17,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { PackageModule } from './package/package.module';
 import { PaymentModule } from './payment/payment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { MailModule } from './mail/mail.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
@@ -80,6 +81,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     PackageModule,
     PaymentModule,
     DashboardModule,
+    MailModule,
   ],
   providers: [
     {

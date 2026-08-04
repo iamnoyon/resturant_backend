@@ -4,10 +4,13 @@ import {
   ConflictException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,12 +21,18 @@ import {
 } from '../common/dto/pagination.dto';
 import { Role } from '../common/enums/role.enum';
 import { UserStatus } from '../common/enums/user-status.enum';
+import { MailService } from '../mail/mail.service';
+import { welcomeEmailTemplate } from '../mail/templates/welcome-email.template';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private mailService: MailService,
+    private configService: ConfigService,
   ) {}
 
   async create(createUserDto: CreateUserDto, currentUser: any) {
@@ -56,7 +65,9 @@ export class UsersService {
       throw new ConflictException('Email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const plainPassword =
+      createUserDto.password || crypto.randomBytes(8).toString('hex');
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
     const user = this.userRepository.create({
       name: createUserDto.name,
       email: createUserDto.email,
@@ -70,12 +81,42 @@ export class UsersService {
     } as unknown as User);
 
     const saved = await this.userRepository.save(user);
+
+    this.sendWelcomeEmail(saved, plainPassword);
+
     const { password, ...result } = saved;
     return {
       success: true,
       message: 'User created successfully',
       data: result,
     };
+  }
+
+  private sendWelcomeEmail(user: User, plainPassword: string): void {
+    const loginUrl = this.configService.get<string>(
+      'FRONTEND_LOGIN_URL',
+      'http://localhost:3001/login',
+    );
+
+    this.mailService
+      .sendMail({
+        to: user.email,
+        subject: 'Your Account Has Been Created',
+        html: welcomeEmailTemplate({
+          name: user.name,
+          email: user.email,
+          password: plainPassword,
+          loginUrl,
+        }),
+      })
+      .then((sent) => {
+        if (sent) {
+          this.logger.log(`Welcome email sent to ${user.email}`);
+        }
+      })
+      .catch((err) => {
+        this.logger.error(`Failed to send welcome email: ${err.message}`);
+      });
   }
 
   async findAll(
