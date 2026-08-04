@@ -68,6 +68,35 @@ export class SeedService implements OnModuleInit {
         }
       }
 
+      const admins = await this.userRepository.find({
+        where: { role: Role.ADMIN },
+      });
+
+      if (admins.length > 0) {
+        const allPerms = await this.permissionRepository.find();
+        const adminPerms = allPerms
+          .filter(
+            (p) =>
+              p.module !== 'business' ||
+              (p.module === 'business' && p.action !== 'create' && p.action !== 'delete'),
+          )
+          .map((p) => p.name);
+
+        for (const admin of admins) {
+          const needsUpdate =
+            !admin.permissions ||
+            admin.permissions.length < adminPerms.length ||
+            !adminPerms.every((p) => admin.permissions.includes(p));
+
+          if (needsUpdate) {
+            await this.userRepository.update(admin.id, {
+              permissions: adminPerms,
+            });
+            console.log(`[Seed] Admin (${admin.email}) permissions synced.`);
+          }
+        }
+      }
+
       console.log('[Seed] Users already exist, skipping user seed.');
       return;
     }

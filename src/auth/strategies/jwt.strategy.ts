@@ -17,10 +17,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
   ) {
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET', 'default_secret'),
+      secretOrKey: secret,
     });
   }
 

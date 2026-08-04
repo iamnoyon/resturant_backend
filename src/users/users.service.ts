@@ -91,7 +91,7 @@ export class UsersService {
     const where: any = {};
 
     if (currentUser.role === Role.ADMIN) {
-      where.createdBy = currentUser.id;
+      where.businessId = currentUser.businessId;
     } else if (currentUser.role === Role.CASHIER) {
       where.id = currentUser.id;
     } else if (currentUser.role === Role.WAITER) {
