@@ -17,9 +17,17 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   const frontendUrl = configService.get<string>('FRONTEND_URL');
+  const corsOrigins = (
+    configService.get<string>('CORS_ORIGINS') ||
+    frontendUrl ||
+    ''
+  )
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
 
   app.enableCors({
-    origin: frontendUrl,
+    origin: corsOrigins.length > 0 ? corsOrigins : '*',
     credentials: true,
   });
 
