@@ -29,25 +29,53 @@ export class SeedService implements OnModuleInit {
   }
 
   private async seedPermissions() {
-    const count = await this.permissionRepository.count();
-    if (count > 0) {
-      console.log('[Seed] Permissions already exist, skipping.');
+    const existingPerms = await this.permissionRepository.find();
+    const existingNames = new Set(existingPerms.map((p) => p.name));
+    const newPerms = PERMISSIONS_LIST.filter(
+      (p) => !existingNames.has(p.name),
+    );
+
+    if (newPerms.length === 0) {
+      console.log('[Seed] All permissions exist, nothing to add.');
       return;
     }
 
-    console.log('[Seed] Seeding permission list...');
-    await this.permissionRepository.save(PERMISSIONS_LIST);
-    console.log(`[Seed] Seeded ${PERMISSIONS_LIST.length} permissions.`);
+    console.log(`[Seed] Adding ${newPerms.length} new permission(s)...`);
+    await this.permissionRepository.save(newPerms);
+    console.log(`[Seed] Added: ${newPerms.map((p) => p.name).join(', ')}`);
   }
 
   private async seedUsers() {
     const userCount = await this.userRepository.count();
     if (userCount > 0) {
+      const superadmin = await this.userRepository.findOne({
+        where: { role: Role.SUPERADMIN },
+      });
+
+      if (superadmin) {
+        const allPerms = await this.permissionRepository.find();
+        const allPermNames = allPerms.map((p) => p.name);
+        const needsUpdate =
+          !superadmin.permissions ||
+          superadmin.permissions.length < allPermNames.length ||
+          !allPermNames.every((p) => superadmin.permissions.includes(p));
+
+        if (needsUpdate) {
+          await this.userRepository.update(superadmin.id, {
+            permissions: allPermNames,
+          });
+          console.log('[Seed] Superadmin permissions synced.');
+        }
+      }
+
       console.log('[Seed] Users already exist, skipping user seed.');
       return;
     }
 
     console.log('[Seed] No users found. Seeding superadmin...');
+
+    const allPerms = await this.permissionRepository.find();
+    const allPermNames = allPerms.map((p) => p.name);
 
     const superadminPassword = await bcrypt.hash(
       this.configService.get<string>('SUPERADMIN_PASSWORD', 'Super@123'),
@@ -64,6 +92,7 @@ export class SeedService implements OnModuleInit {
       password: superadminPassword,
       role: Role.SUPERADMIN,
       status: UserStatus.ACTIVE,
+      permissions: allPermNames,
     } as unknown as User);
 
     const savedSuperadmin = await this.userRepository.save(superadmin);
