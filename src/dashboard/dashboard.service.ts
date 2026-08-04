@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from '../order/entities/order.entity';
 import { Expense } from '../expense/entities/expense.entity';
 import { Product } from '../product/entities/product.entity';
 import { Table } from '../table/entities/table.entity';
+import { Business } from '../business/entities/business.entity';
 import { BillStatus } from '../common/enums/bill-status.enum';
+import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Role } from '../common/enums/role.enum';
 
 interface PeriodMetrics {
@@ -41,7 +43,111 @@ export class DashboardService {
     private productRepository: Repository<Product>,
     @InjectRepository(Table)
     private tableRepository: Repository<Table>,
+    @InjectRepository(Business)
+    private businessRepository: Repository<Business>,
   ) {}
+
+  async getAdminOverview(currentUser: any) {
+    if (currentUser.role !== Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const now = new Date();
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+    const [
+      totalBusinesses,
+      activeSubscriptions,
+      inactiveSubscriptions,
+      expiringSoon,
+      revenueResult,
+    ] = await Promise.all([
+      this.businessRepository.count(),
+      this.businessRepository.count({
+        where: { subscription: SubscriptionStatus.ACTIVE },
+      }),
+      this.businessRepository.count({
+        where: { subscription: SubscriptionStatus.INACTIVE },
+      }),
+      this.businessRepository
+        .createQueryBuilder('business')
+        .where('business.subscription = :status', {
+          status: SubscriptionStatus.ACTIVE,
+        })
+        .andWhere('business.subEndDate BETWEEN :now AND :sevenDays', {
+          now,
+          sevenDays: sevenDaysFromNow,
+        })
+        .getCount(),
+      this.orderRepository
+        .createQueryBuilder('order')
+        .select('COALESCE(SUM(order.subTotal), 0)', 'total')
+        .where('order.billStatus = :billStatus', {
+          billStatus: BillStatus.PAID,
+        })
+        .getRawOne(),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        totalBusinesses,
+        activeSubscriptions,
+        inactiveSubscriptions,
+        totalRevenue: Number(revenueResult?.total) || 0,
+        expiringSoon,
+      },
+    };
+  }
+
+  async getAdminCharts(currentUser: any, year: number) {
+    if (currentUser.role !== Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const [revenueData, businessData] = await Promise.all([
+      this.orderRepository
+        .createQueryBuilder('order')
+        .select('EXTRACT(MONTH FROM order.createdAt)', 'month')
+        .addSelect('COALESCE(SUM(order.subTotal), 0)', 'amount')
+        .where('order.billStatus = :billStatus', {
+          billStatus: BillStatus.PAID,
+        })
+        .andWhere('EXTRACT(YEAR FROM order.createdAt) = :year', { year })
+        .groupBy('EXTRACT(MONTH FROM order.createdAt)')
+        .orderBy('month', 'ASC')
+        .getRawMany(),
+
+      this.businessRepository
+        .createQueryBuilder('business')
+        .select('EXTRACT(MONTH FROM business.createdAt)', 'month')
+        .addSelect('COUNT(business.id)', 'count')
+        .where('EXTRACT(YEAR FROM business.createdAt) = :year', { year })
+        .groupBy('EXTRACT(MONTH FROM business.createdAt)')
+        .orderBy('month', 'ASC')
+        .getRawMany(),
+    ]);
+
+    const revenueMap = new Map(
+      revenueData.map((r: any) => [Number(r.month), Number(r.amount)]),
+    );
+    const businessMap = new Map(
+      businessData.map((b: any) => [Number(b.month), Number(b.count)]),
+    );
+
+    const revenue = Array.from({ length: 12 }, (_, i) => ({
+      month: i + 1,
+      amount: revenueMap.get(i + 1) || 0,
+    }));
+
+    const businesses = Array.from({ length: 12 }, (_, i) => ({
+      month: i + 1,
+      count: businessMap.get(i + 1) || 0,
+    }));
+
+    return { success: true, data: { revenue, businesses } };
+  }
 
   async getSummary(currentUser: any, startDate: string, endDate: string) {
     const businessFilter = this.businessFilter(currentUser);

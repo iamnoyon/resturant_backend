@@ -58,4 +58,21 @@ export class DashboardController {
   ) {
     return this.dashboardService.getRecentOrders(currentUser, query.limit);
   }
+
+  @Get('admin/overview')
+  @RequirePermissions('dashboard:read')
+  @ApiOperation({ summary: 'Superadmin platform-wide overview' })
+  getAdminOverview(@CurrentUser() currentUser: any) {
+    return this.dashboardService.getAdminOverview(currentUser);
+  }
+
+  @Get('admin/charts')
+  @RequirePermissions('dashboard:read')
+  @ApiOperation({ summary: 'Superadmin monthly revenue and business creation for a year' })
+  getAdminCharts(
+    @Query('year') year: string,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.dashboardService.getAdminCharts(currentUser, +year);
+  }
 }

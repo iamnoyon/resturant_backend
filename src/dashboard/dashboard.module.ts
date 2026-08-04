@@ -6,9 +6,10 @@ import { Order } from '../order/entities/order.entity';
 import { Expense } from '../expense/entities/expense.entity';
 import { Product } from '../product/entities/product.entity';
 import { Table } from '../table/entities/table.entity';
+import { Business } from '../business/entities/business.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, Expense, Product, Table])],
+  imports: [TypeOrmModule.forFeature([Order, Expense, Product, Table, Business])],
   controllers: [DashboardController],
   providers: [DashboardService],
 })
