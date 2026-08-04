@@ -98,6 +98,8 @@ export class UsersService {
       'http://localhost:3001/login',
     );
 
+    this.logger.log(`Attempting to send welcome email to ${user.email}`);
+
     this.mailService
       .sendMail({
         to: user.email,
@@ -112,6 +114,8 @@ export class UsersService {
       .then((sent) => {
         if (sent) {
           this.logger.log(`Welcome email sent to ${user.email}`);
+        } else {
+          this.logger.warn(`Welcome email FAILED to send to ${user.email}`);
         }
       })
       .catch((err) => {
