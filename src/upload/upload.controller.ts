@@ -59,7 +59,7 @@ export class UploadController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'Image file (jpeg, png, gif, webp, svg)',
+          description: 'Image file (jpeg, png, gif, webp)',
         },
       },
       required: ['file'],
@@ -86,26 +86,6 @@ export class UploadController {
           return;
         }
 
-        const magicBytes = file.buffer?.slice(0, 12);
-        if (!magicBytes) {
-          callback(
-            new BadRequestException('Unable to validate file content'),
-            false,
-          );
-          return;
-        }
-
-        const valid = validateMagicBytes(file.mimetype, magicBytes);
-        if (!valid) {
-          callback(
-            new BadRequestException(
-              'File content does not match its declared type',
-            ),
-            false,
-          );
-          return;
-        }
-
         callback(null, true);
       },
       limits: { fileSize: 5 * 1024 * 1024 },
@@ -113,6 +93,19 @@ export class UploadController {
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file uploaded');
+
+    const magicBytes = file.buffer?.slice(0, 12);
+    if (!magicBytes) {
+      throw new BadRequestException('Unable to validate file content');
+    }
+
+    const valid = validateMagicBytes(file.mimetype, magicBytes);
+    if (!valid) {
+      throw new BadRequestException(
+        'File content does not match its declared type',
+      );
+    }
+
     return this.cloudinaryService.uploadImage(file);
   }
 
