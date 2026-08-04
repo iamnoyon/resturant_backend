@@ -27,14 +27,13 @@ export class CreateUserDto {
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'Cashier@123',
-    description: 'Login password (min 6 chars). Auto-generated if not provided.',
+    description: 'Login password (min 6 chars)',
   })
-  @IsOptional()
   @IsString()
   @MinLength(6)
-  password?: string;
+  password: string;
 
   @ApiProperty({
     example: 'cashier',
