@@ -35,17 +35,17 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const isProduction =
-          configService.get<string>('NODE_ENV') === 'production';
+        const dbSynchronize =
+          configService.get<string>('DB_SYNCHRONIZE', 'true') === 'true';
         const databaseUrl = configService.get<string>('DATABASE_URL');
         if (databaseUrl) {
           return {
             type: 'postgres' as const,
             url: databaseUrl,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: !isProduction,
+            synchronize: dbSynchronize,
             ssl: {
-              rejectUnauthorized: !isProduction,
+              rejectUnauthorized: false,
             },
           };
         }
@@ -57,10 +57,10 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: !isProduction,
+          synchronize: dbSynchronize,
           ...(configService.get<string>('DB_SSL') === 'true' && {
             ssl: {
-              rejectUnauthorized: !isProduction,
+              rejectUnauthorized: false,
             },
           }),
         };
