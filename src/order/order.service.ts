@@ -54,8 +54,31 @@ export class OrderService {
       now.getSeconds().toString().padStart(2, '0');
     const orderId = `ORD-${dateStr}${timeStr}`;
 
+    const productCostTotal = await Promise.all(
+      createOrderDto.products.map(async (item) => {
+        const product = await this.productRepository.findOne({
+          where: { id: item.productId },
+        });
+
+        if (!product) {
+          return 0;
+        }
+
+        return Number(product.costPrice || 0) * Number(item.quantity || 0);
+      }),
+    );
+
+    const orderRevenue = Number(
+      createOrderDto.subTotal ??
+        (Number(createOrderDto.totalBill || 0) - Number(createOrderDto.discount || 0)),
+    );
+    const calculatedProfit = Number(
+      (orderRevenue - productCostTotal.reduce((sum, value) => sum + value, 0)).toFixed(2),
+    );
+
     const order = this.orderRepository.create({
       ...createOrderDto,
+      profit: calculatedProfit,
       orderId,
       businessId: currentUser.businessId,
       createdBy: currentUser.id,

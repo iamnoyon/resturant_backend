@@ -38,6 +38,9 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   subTotal: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  profit: number;
+
   @Column({ type: 'enum', enum: BillStatus, default: BillStatus.UNPAID })
   billStatus: BillStatus;
 

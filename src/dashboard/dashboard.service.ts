@@ -14,6 +14,7 @@ interface PeriodMetrics {
   totalRevenue: number;
   totalOrders: number;
   totalExpenses: number;
+  netProfit: number;
   pendingBillCount: number;
   averageOrderValue: number;
   totalDiscount: number;
@@ -82,7 +83,7 @@ export class DashboardService {
         .getCount(),
       this.orderRepository
         .createQueryBuilder('order')
-        .select('COALESCE(SUM(order.subTotal), 0)', 'total')
+        .select('COALESCE(SUM(order.totalBill - order.discount), 0)', 'total')
         .where('order.billStatus = :billStatus', {
           billStatus: BillStatus.PAID,
         })
@@ -169,7 +170,9 @@ export class DashboardService {
           MS_PER_DAY,
       ) + 1;
 
-    const previousEnd = new Date(currentStartForComparison.getTime() - MS_PER_DAY);
+    const previousEnd = new Date(
+      currentStartForComparison.getTime() - MS_PER_DAY,
+    );
     previousEnd.setHours(23, 59, 59, 999);
     const previousStart = new Date(
       previousEnd.getTime() - (daysInPeriod - 1) * MS_PER_DAY,
@@ -185,8 +188,24 @@ export class DashboardService {
       this.computePeriodMetrics(businessFilter, previousStart, previousEnd),
     ]);
 
-    const netProfit = current.totalRevenue - current.totalExpenses;
-    const previousNetProfit = previous.totalRevenue - previous.totalExpenses;
+    const expensePerMonth = await this.expenseRepository
+      .createQueryBuilder('expense')
+      .select('EXTRACT(YEAR FROM expense.createdAt)', 'year')
+      .addSelect('EXTRACT(MONTH FROM expense.createdAt)', 'month')
+      .addSelect('COALESCE(SUM(expense.expenseValue), 0)', 'total')
+      .where('expense.createdAt BETWEEN :start AND :end', {
+        start: currentStartForComparison,
+        end: currentEndForComparison,
+      })
+      .andWhere(businessFilter)
+      .groupBy('EXTRACT(YEAR FROM expense.createdAt)')
+      .addGroupBy('EXTRACT(MONTH FROM expense.createdAt)')
+      .orderBy('year', 'ASC')
+      .addOrderBy('month', 'ASC')
+      .getRawMany();
+
+    const netProfit = current.netProfit;
+    const previousNetProfit = previous.netProfit;
 
     return {
       success: true,
@@ -216,6 +235,11 @@ export class DashboardService {
         totalProducts: current.totalProducts,
         lowStockProducts: current.lowStockProducts,
         totalTables: current.totalTables,
+        expensesPerMonth: expensePerMonth.map((e) => ({
+          year: Number(e.year),
+          month: Number(e.month),
+          total: Number(e.total),
+        })),
       },
     };
   }
@@ -234,7 +258,10 @@ export class DashboardService {
       this.orderRepository
         .createQueryBuilder('order')
         .select('DATE(order.createdAt)', 'date')
-        .addSelect('COALESCE(SUM(order.subTotal), 0)', 'amount')
+        .addSelect(
+          'COALESCE(SUM(order.totalBill - order.discount), 0)',
+          'amount',
+        )
         .where('order.billStatus = :billStatus', {
           billStatus: BillStatus.PAID,
         })
@@ -330,6 +357,7 @@ export class DashboardService {
       revenueResult,
       orderCount,
       expenseResult,
+      netProfitResult,
       pendingBillCount,
       avgOrderResult,
       discountResult,
@@ -339,7 +367,7 @@ export class DashboardService {
     ] = await Promise.all([
       this.orderRepository
         .createQueryBuilder('order')
-        .select('COALESCE(SUM(order.subTotal), 0)', 'total')
+        .select('COALESCE(SUM(order.totalBill - order.discount), 0)', 'total')
         .where('order.billStatus = :billStatus', {
           billStatus: BillStatus.PAID,
         })
@@ -371,6 +399,19 @@ export class DashboardService {
 
       this.orderRepository
         .createQueryBuilder('order')
+        .select('COALESCE(SUM(order.profit), 0)', 'total')
+        .where('order.billStatus = :billStatus', {
+          billStatus: BillStatus.PAID,
+        })
+        .andWhere('order.createdAt BETWEEN :start AND :end', {
+          start: dateStart,
+          end: dateEnd,
+        })
+        .andWhere(businessFilter)
+        .getRawOne(),
+
+      this.orderRepository
+        .createQueryBuilder('order')
         .where('order.billStatus = :billStatus', {
           billStatus: BillStatus.UNPAID,
         })
@@ -379,7 +420,7 @@ export class DashboardService {
 
       this.orderRepository
         .createQueryBuilder('order')
-        .select('COALESCE(AVG(order.subTotal), 0)', 'avg')
+        .select('COALESCE(AVG(order.totalBill - order.discount), 0)', 'avg')
         .where('order.billStatus = :billStatus', {
           billStatus: BillStatus.PAID,
         })
@@ -426,6 +467,9 @@ export class DashboardService {
       totalRevenue: Number(revenueResult?.total) || 0,
       totalOrders: orderCount,
       totalExpenses: Number(expenseResult?.total) || 0,
+      netProfit:
+        (Number(netProfitResult?.total) || 0) -
+        (Number(expenseResult?.total) || 0),
       pendingBillCount,
       averageOrderValue: Number(Number(avgOrderResult?.avg).toFixed(2)) || 0,
       totalDiscount: Number(discountResult?.total) || 0,
@@ -438,7 +482,9 @@ export class DashboardService {
   private normalizeDateRange(startDate?: string, endDate?: string) {
     const now = new Date();
 
-    let start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
+    let start = startDate
+      ? new Date(startDate)
+      : new Date(now.getFullYear(), now.getMonth(), 1);
     let end = endDate
       ? new Date(endDate)
       : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
