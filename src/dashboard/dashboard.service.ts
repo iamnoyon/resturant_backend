@@ -149,22 +149,27 @@ export class DashboardService {
     return { success: true, data: { revenue, businesses } };
   }
 
-  async getSummary(currentUser: any, startDate: string, endDate: string) {
+  async getSummary(currentUser: any, startDate?: string, endDate?: string) {
     const businessFilter = this.businessFilter(currentUser);
+    const { start: currentStart, end: currentEnd } = this.normalizeDateRange(
+      startDate,
+      endDate,
+    );
 
-    const currentStart = new Date(startDate);
-    currentStart.setHours(0, 0, 0, 0);
-    const currentEnd = new Date(endDate);
-    currentEnd.setHours(23, 59, 59, 999);
+    const currentStartForComparison = new Date(currentStart);
+    currentStartForComparison.setHours(0, 0, 0, 0);
+    const currentEndForComparison = new Date(currentEnd);
+    currentEndForComparison.setHours(23, 59, 59, 999);
 
-    const currentEndDay = new Date(endDate);
+    const currentEndDay = new Date(currentEnd);
     currentEndDay.setHours(0, 0, 0, 0);
     const daysInPeriod =
       Math.round(
-        (currentEndDay.getTime() - currentStart.getTime()) / MS_PER_DAY,
+        (currentEndDay.getTime() - currentStartForComparison.getTime()) /
+          MS_PER_DAY,
       ) + 1;
 
-    const previousEnd = new Date(currentStart.getTime() - MS_PER_DAY);
+    const previousEnd = new Date(currentStartForComparison.getTime() - MS_PER_DAY);
     previousEnd.setHours(23, 59, 59, 999);
     const previousStart = new Date(
       previousEnd.getTime() - (daysInPeriod - 1) * MS_PER_DAY,
@@ -172,7 +177,11 @@ export class DashboardService {
     previousStart.setHours(0, 0, 0, 0);
 
     const [current, previous] = await Promise.all([
-      this.computePeriodMetrics(businessFilter, currentStart, currentEnd),
+      this.computePeriodMetrics(
+        businessFilter,
+        currentStartForComparison,
+        currentEndForComparison,
+      ),
       this.computePeriodMetrics(businessFilter, previousStart, previousEnd),
     ]);
 
@@ -211,10 +220,13 @@ export class DashboardService {
     };
   }
 
-  async getCharts(currentUser: any, startDate: string, endDate: string) {
-    const dateStart = new Date(startDate);
-    const dateEnd = new Date(endDate);
-    dateEnd.setHours(23, 59, 59, 999);
+  async getCharts(currentUser: any, startDate?: string, endDate?: string) {
+    const { start: dateStart, end: dateEnd } = this.normalizeDateRange(
+      startDate,
+      endDate,
+    );
+    const dateEndWithTime = new Date(dateEnd);
+    dateEndWithTime.setHours(23, 59, 59, 999);
 
     const businessFilter = this.businessFilter(currentUser);
 
@@ -228,7 +240,7 @@ export class DashboardService {
         })
         .andWhere('order.createdAt BETWEEN :start AND :end', {
           start: dateStart,
-          end: dateEnd,
+          end: dateEndWithTime,
         })
         .andWhere(businessFilter)
         .groupBy('DATE(order.createdAt)')
@@ -241,7 +253,7 @@ export class DashboardService {
         .addSelect('COUNT(order.id)', 'count')
         .where('order.createdAt BETWEEN :start AND :end', {
           start: dateStart,
-          end: dateEnd,
+          end: dateEndWithTime,
         })
         .andWhere(businessFilter)
         .groupBy('DATE(order.createdAt)')
@@ -254,7 +266,7 @@ export class DashboardService {
         .addSelect('COALESCE(SUM(expense.expenseValue), 0)', 'amount')
         .where('expense.createdAt BETWEEN :start AND :end', {
           start: dateStart,
-          end: dateEnd,
+          end: dateEndWithTime,
         })
         .andWhere(businessFilter)
         .groupBy('DATE(expense.createdAt)')
@@ -421,6 +433,29 @@ export class DashboardService {
       lowStockProducts,
       totalTables,
     };
+  }
+
+  private normalizeDateRange(startDate?: string, endDate?: string) {
+    const now = new Date();
+
+    let start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
+    let end = endDate
+      ? new Date(endDate)
+      : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    if (Number.isNaN(start.getTime())) {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    if (Number.isNaN(end.getTime())) {
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+
+    if (start > end) {
+      [start, end] = [end, start];
+    }
+
+    return { start, end };
   }
 
   private withTrend(current: number, previous: number): TrendIndicator {

@@ -1,21 +1,23 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class DateRangeQueryDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Start date (ISO format YYYY-MM-DD)',
     example: '2026-07-01',
   })
+  @IsOptional()
   @IsDateString()
-  startDate: string;
+  startDate?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'End date (ISO format YYYY-MM-DD)',
     example: '2026-07-31',
   })
+  @IsOptional()
   @IsDateString()
-  endDate: string;
+  endDate?: string;
 }
 
 export class RecentOrdersQueryDto {
