@@ -245,19 +245,79 @@ export class DashboardService {
   }
 
   async getCharts(currentUser: any, startDate?: string, endDate?: string) {
-    const { start: dateStart, end: dateEnd } = this.normalizeDateRange(
-      startDate,
-      endDate,
-    );
-    const dateEndWithTime = new Date(dateEnd);
-    dateEndWithTime.setHours(23, 59, 59, 999);
+    const now = new Date();
+
+    let dateStart = startDate
+      ? new Date(startDate)
+      : new Date(now.getFullYear(), 0, 1);
+
+    let dateEnd = endDate
+      ? new Date(endDate)
+      : new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+    if (!startDate && !endDate) {
+      dateStart = new Date(now.getFullYear(), 0, 1);
+      dateEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    } else if (startDate && !endDate) {
+      dateStart = new Date(startDate);
+      dateEnd = new Date(dateStart.getFullYear(), 11, 31, 23, 59, 59, 999);
+    } else if (!startDate && endDate) {
+      dateEnd = new Date(endDate);
+      dateStart = new Date(dateEnd.getFullYear(), 0, 1);
+    }
+
+    // Validate dates
+    if (Number.isNaN(dateStart.getTime())) {
+      dateStart = new Date(now.getFullYear(), 0, 1);
+    }
+
+    if (Number.isNaN(dateEnd.getTime())) {
+      dateEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    }
+
+    // Swap dates if start date is greater than end date
+    if (dateStart > dateEnd) {
+      [dateStart, dateEnd] = [dateEnd, dateStart];
+    }
 
     const businessFilter = this.businessFilter(currentUser);
 
-    const [revenueData, orderData, expenseData] = await Promise.all([
+    const monthMap = new Map<
+      string,
+      {
+        revenue: number;
+        netProfit: number;
+      }
+    >();
+
+    // Generate all months between start and end date
+    const monthCursor = new Date(
+      dateStart.getFullYear(),
+      dateStart.getMonth(),
+      1,
+    );
+
+    const lastMonth = new Date(dateEnd.getFullYear(), dateEnd.getMonth(), 1);
+
+    while (monthCursor <= lastMonth) {
+      const key = `${monthCursor.getFullYear()}-${String(
+        monthCursor.getMonth() + 1,
+      ).padStart(2, '0')}`;
+
+      monthMap.set(key, {
+        revenue: 0,
+        netProfit: 0,
+      });
+
+      monthCursor.setMonth(monthCursor.getMonth() + 1);
+    }
+
+    const [revenueData, expenseData, profitData] = await Promise.all([
+      // Revenue
       this.orderRepository
         .createQueryBuilder('order')
-        .select('DATE(order.createdAt)', 'date')
+        .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
+        .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
         .addSelect(
           'COALESCE(SUM(order.totalBill - order.discount), 0)',
           'amount',
@@ -267,54 +327,141 @@ export class DashboardService {
         })
         .andWhere('order.createdAt BETWEEN :start AND :end', {
           start: dateStart,
-          end: dateEndWithTime,
+          end: dateEnd,
         })
         .andWhere(businessFilter)
-        .groupBy('DATE(order.createdAt)')
-        .orderBy('date', 'ASC')
+        .groupBy('EXTRACT(YEAR FROM order.createdAt)')
+        .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
+        .orderBy('year', 'ASC')
+        .addOrderBy('month', 'ASC')
         .getRawMany(),
 
-      this.orderRepository
-        .createQueryBuilder('order')
-        .select('DATE(order.createdAt)', 'date')
-        .addSelect('COUNT(order.id)', 'count')
-        .where('order.createdAt BETWEEN :start AND :end', {
-          start: dateStart,
-          end: dateEndWithTime,
-        })
-        .andWhere(businessFilter)
-        .groupBy('DATE(order.createdAt)')
-        .orderBy('date', 'ASC')
-        .getRawMany(),
-
+      // Expenses
       this.expenseRepository
         .createQueryBuilder('expense')
-        .select('DATE(expense.createdAt)', 'date')
+        .select('EXTRACT(YEAR FROM expense.createdAt)', 'year')
+        .addSelect('EXTRACT(MONTH FROM expense.createdAt)', 'month')
         .addSelect('COALESCE(SUM(expense.expenseValue), 0)', 'amount')
         .where('expense.createdAt BETWEEN :start AND :end', {
           start: dateStart,
-          end: dateEndWithTime,
+          end: dateEnd,
         })
         .andWhere(businessFilter)
-        .groupBy('DATE(expense.createdAt)')
-        .orderBy('date', 'ASC')
+        .groupBy('EXTRACT(YEAR FROM expense.createdAt)')
+        .addGroupBy('EXTRACT(MONTH FROM expense.createdAt)')
+        .orderBy('year', 'ASC')
+        .addOrderBy('month', 'ASC')
+        .getRawMany(),
+
+      // Profit
+      this.orderRepository
+        .createQueryBuilder('order')
+        .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
+        .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
+        .addSelect('COALESCE(SUM(order.profit), 0)', 'amount')
+        .where('order.billStatus = :billStatus', {
+          billStatus: BillStatus.PAID,
+        })
+        .andWhere('order.createdAt BETWEEN :start AND :end', {
+          start: dateStart,
+          end: dateEnd,
+        })
+        .andWhere(businessFilter)
+        .groupBy('EXTRACT(YEAR FROM order.createdAt)')
+        .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
+        .orderBy('year', 'ASC')
+        .addOrderBy('month', 'ASC')
         .getRawMany(),
     ]);
 
+    // Add revenue data
+    revenueData.forEach((item) => {
+      const month = `${Number(item.year)}-${String(Number(item.month)).padStart(
+        2,
+        '0',
+      )}`;
+
+      if (monthMap.has(month)) {
+        monthMap.get(month)!.revenue = Number(item.amount) || 0;
+      }
+    });
+
+    // Subtract expenses from net profit
+    expenseData.forEach((item) => {
+      const month = `${Number(item.year)}-${String(Number(item.month)).padStart(
+        2,
+        '0',
+      )}`;
+
+      if (monthMap.has(month)) {
+        monthMap.get(month)!.netProfit -= Number(item.amount) || 0;
+      }
+    });
+
+    // Add order profit to net profit
+    profitData.forEach((item) => {
+      const month = `${Number(item.year)}-${String(Number(item.month)).padStart(
+        2,
+        '0',
+      )}`;
+
+      if (monthMap.has(month)) {
+        monthMap.get(month)!.netProfit += Number(item.amount) || 0;
+      }
+    });
+
+    const labels = Array.from(monthMap.keys());
+
+    const revenue = labels.map((month) =>
+      Number(monthMap.get(month)?.revenue || 0),
+    );
+
+    const netProfit = labels.map((month) =>
+      Number(monthMap.get(month)?.netProfit || 0),
+    );
+
+    // Convert YYYY-MM to Jan, Feb, Mar, etc.
+    const getMonthName = (month: string) => {
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+
+      const monthNumber = Number(month.split('-')[1]);
+
+      return monthNames[monthNumber - 1];
+    };
+
     return {
       success: true,
+
       data: {
-        revenuePerDay: revenueData.map((r) => ({
-          date: r.date,
-          amount: Number(r.amount),
+        labels,
+
+        revenue,
+
+        netProfit,
+
+        revenuePerMonth: labels.map((month, index) => ({
+          month,
+          monthName: getMonthName(month),
+          amount: revenue[index],
         })),
-        ordersPerDay: orderData.map((o) => ({
-          date: o.date,
-          count: Number(o.count),
-        })),
-        expensesPerDay: expenseData.map((e) => ({
-          date: e.date,
-          amount: Number(e.amount),
+
+        netProfitPerMonth: labels.map((month, index) => ({
+          month,
+          monthName: getMonthName(month),
+          amount: netProfit[index],
         })),
       },
     };
