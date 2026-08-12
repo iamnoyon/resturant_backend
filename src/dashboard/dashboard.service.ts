@@ -312,67 +312,91 @@ export class DashboardService {
       monthCursor.setMonth(monthCursor.getMonth() + 1);
     }
 
-    const [revenueData, expenseData, profitData] = await Promise.all([
-      // Revenue
-      this.orderRepository
-        .createQueryBuilder('order')
-        .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
-        .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
-        .addSelect(
-          'COALESCE(SUM(order.totalBill - order.discount), 0)',
-          'amount',
-        )
-        .where('order.billStatus = :billStatus', {
-          billStatus: BillStatus.PAID,
-        })
-        .andWhere('order.createdAt BETWEEN :start AND :end', {
-          start: dateStart,
-          end: dateEnd,
-        })
-        .andWhere(businessFilter)
-        .groupBy('EXTRACT(YEAR FROM order.createdAt)')
-        .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
-        .orderBy('year', 'ASC')
-        .addOrderBy('month', 'ASC')
-        .getRawMany(),
+    const [revenueData, expenseData, profitData, discountData] =
+      await Promise.all([
+        // Revenue
+        this.orderRepository
+          .createQueryBuilder('order')
+          .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
+          .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
+          .addSelect(
+            'COALESCE(SUM(order.totalBill - order.discount), 0)',
+            'amount',
+          )
+          .where('order.billStatus = :billStatus', {
+            billStatus: BillStatus.PAID,
+          })
+          .andWhere('order.createdAt BETWEEN :start AND :end', {
+            start: dateStart,
+            end: dateEnd,
+          })
+          .andWhere(businessFilter)
+          .groupBy('EXTRACT(YEAR FROM order.createdAt)')
+          .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
+          .orderBy('year', 'ASC')
+          .addOrderBy('month', 'ASC')
+          .getRawMany(),
 
-      // Expenses
-      this.expenseRepository
-        .createQueryBuilder('expense')
-        .select('EXTRACT(YEAR FROM expense.createdAt)', 'year')
-        .addSelect('EXTRACT(MONTH FROM expense.createdAt)', 'month')
-        .addSelect('COALESCE(SUM(expense.expenseValue), 0)', 'amount')
-        .where('expense.createdAt BETWEEN :start AND :end', {
-          start: dateStart,
-          end: dateEnd,
-        })
-        .andWhere(businessFilter)
-        .groupBy('EXTRACT(YEAR FROM expense.createdAt)')
-        .addGroupBy('EXTRACT(MONTH FROM expense.createdAt)')
-        .orderBy('year', 'ASC')
-        .addOrderBy('month', 'ASC')
-        .getRawMany(),
+        // Expenses
+        this.expenseRepository
+          .createQueryBuilder('expense')
+          .select('EXTRACT(YEAR FROM expense.createdAt)', 'year')
+          .addSelect('EXTRACT(MONTH FROM expense.createdAt)', 'month')
+          .addSelect('COALESCE(SUM(expense.expenseValue), 0)', 'amount')
+          .where('expense.createdAt BETWEEN :start AND :end', {
+            start: dateStart,
+            end: dateEnd,
+          })
+          .andWhere(businessFilter)
+          .groupBy('EXTRACT(YEAR FROM expense.createdAt)')
+          .addGroupBy('EXTRACT(MONTH FROM expense.createdAt)')
+          .orderBy('year', 'ASC')
+          .addOrderBy('month', 'ASC')
+          .getRawMany(),
 
-      // Profit
-      this.orderRepository
-        .createQueryBuilder('order')
-        .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
-        .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
-        .addSelect('COALESCE(SUM(order.profit), 0)', 'amount')
-        .where('order.billStatus = :billStatus', {
-          billStatus: BillStatus.PAID,
-        })
-        .andWhere('order.createdAt BETWEEN :start AND :end', {
-          start: dateStart,
-          end: dateEnd,
-        })
-        .andWhere(businessFilter)
-        .groupBy('EXTRACT(YEAR FROM order.createdAt)')
-        .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
-        .orderBy('year', 'ASC')
-        .addOrderBy('month', 'ASC')
-        .getRawMany(),
-    ]);
+        // Profit
+        this.orderRepository
+          .createQueryBuilder('order')
+          .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
+          .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
+          .addSelect('COALESCE(SUM(order.profit), 0)', 'amount')
+          .where('order.billStatus = :billStatus', {
+            billStatus: BillStatus.PAID,
+          })
+          .andWhere('order.createdAt BETWEEN :start AND :end', {
+            start: dateStart,
+            end: dateEnd,
+          })
+          .andWhere(businessFilter)
+          .groupBy('EXTRACT(YEAR FROM order.createdAt)')
+          .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
+          .orderBy('year', 'ASC')
+          .addOrderBy('month', 'ASC')
+          .getRawMany(),
+
+        // Discount
+        this.orderRepository
+          .createQueryBuilder('order')
+          .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
+          .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
+          .addSelect(
+            'COALESCE(SUM(order.discount), 0)',
+            'amount',
+          )
+          .where('order.billStatus = :billStatus', {
+            billStatus: BillStatus.PAID,
+          })
+          .andWhere('order.createdAt BETWEEN :start AND :end', {
+            start: dateStart,
+            end: dateEnd,
+          })
+          .andWhere(businessFilter)
+          .groupBy('EXTRACT(YEAR FROM order.createdAt)')
+          .addGroupBy('EXTRACT(MONTH FROM order.createdAt)')
+          .orderBy('year', 'ASC')
+          .addOrderBy('month', 'ASC')
+          .getRawMany(),
+      ]);
 
     // Add revenue data
     revenueData.forEach((item) => {
@@ -420,6 +444,36 @@ export class DashboardService {
       Number(monthMap.get(month)?.netProfit || 0),
     );
 
+    const totalRevenue = revenue.reduce((sum, val) => sum + val, 0);
+    const totalProfit = netProfit.reduce((sum, val) => sum + val, 0);
+    const totalExpense = expenseData.reduce(
+      (sum, item) => sum + (Number(item.amount) || 0),
+      0,
+    );
+    const totalDiscount = discountData.reduce(
+      (sum, item) => sum + (Number(item.amount) || 0),
+      0,
+    );
+
+    const pieChart = [
+      {
+        name: 'Total Revenue',
+        value: Number(totalRevenue.toFixed(2)),
+      },
+      {
+        name: 'Total Profit',
+        value: Number(totalProfit.toFixed(2)),
+      },
+      {
+        name: 'Total Expense',
+        value: Number(totalExpense.toFixed(2)),
+      },
+      {
+        name: 'Total Discount',
+        value: Number(totalDiscount.toFixed(2)),
+      },
+    ];
+
     // Convert YYYY-MM to Jan, Feb, Mar, etc.
     const getMonthName = (month: string) => {
       const monthNames = [
@@ -463,6 +517,8 @@ export class DashboardService {
           monthName: getMonthName(month),
           amount: netProfit[index],
         })),
+
+        pieChart,
       },
     };
   }
