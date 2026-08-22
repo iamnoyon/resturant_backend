@@ -48,6 +48,12 @@ export class UsersController {
     return this.usersService.getWaiters(currentUser);
   }
 
+  @Get('admin-with-business')
+  @RequirePermissions('user:read')
+  findAdminsWithBusiness(@CurrentUser() currentUser: any) {
+    return this.usersService.findAdminsWithBusiness(currentUser);
+  }
+
   @Get(':id')
   @RequirePermissions('user:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {

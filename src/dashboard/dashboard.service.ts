@@ -6,6 +6,7 @@ import { Expense } from '../expense/entities/expense.entity';
 import { Product } from '../product/entities/product.entity';
 import { Table } from '../table/entities/table.entity';
 import { Business } from '../business/entities/business.entity';
+import { Payment, PaymentStatus } from '../payment/entities/payment.entity';
 import { BillStatus } from '../common/enums/bill-status.enum';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Role } from '../common/enums/role.enum';
@@ -46,6 +47,8 @@ export class DashboardService {
     private tableRepository: Repository<Table>,
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
+    @InjectRepository(Payment)
+    private paymentRepository: Repository<Payment>,
   ) {}
 
   async getAdminOverview(currentUser: any) {
@@ -81,11 +84,11 @@ export class DashboardService {
           sevenDays: sevenDaysFromNow,
         })
         .getCount(),
-      this.orderRepository
-        .createQueryBuilder('order')
-        .select('COALESCE(SUM(order.totalBill - order.discount), 0)', 'total')
-        .where('order.billStatus = :billStatus', {
-          billStatus: BillStatus.PAID,
+      this.paymentRepository
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'total')
+        .where('payment.status = :status', {
+          status: PaymentStatus.SUCCESS,
         })
         .getRawOne(),
     ]);

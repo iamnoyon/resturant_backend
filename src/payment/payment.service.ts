@@ -2,15 +2,23 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Payment, PaymentStatus } from './entities/payment.entity';
 import { Package } from '../package/entities/package.entity';
 import { Business } from '../business/entities/business.entity';
+import { User } from '../users/entities/user.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
+import { Role } from '../common/enums/role.enum';
+import { AdminPurchasePackageDto } from './dto/admin-purchase-package.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResult,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class PaymentService {
@@ -25,6 +33,8 @@ export class PaymentService {
     private packageRepository: Repository<Package>,
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private configService: ConfigService,
   ) {
     const isSandbox =
@@ -184,24 +194,7 @@ export class PaymentService {
       });
       if (!pkg) return { success: false, message: 'Package not found' };
 
-      const business = await this.businessRepository.findOne({
-        where: { id: payment.businessId },
-      });
-      if (business) {
-        const now = new Date();
-        const hasActiveSub =
-          business.subscription === SubscriptionStatus.ACTIVE &&
-          business.subEndDate &&
-          new Date(business.subEndDate) > now;
-        const baseDate = hasActiveSub ? new Date(business.subEndDate!) : now;
-        const endDate = new Date(baseDate);
-        endDate.setMonth(endDate.getMonth() + pkg.numberOfMonth);
-
-        business.subscription = SubscriptionStatus.ACTIVE;
-        business.subStartDate = now;
-        business.subEndDate = endDate;
-        await this.businessRepository.save(business);
-      }
+      await this.applySubscription(payment);
 
       return {
         success: true,
@@ -211,6 +204,154 @@ export class PaymentService {
     } catch {
       return { success: false, message: 'Validation request failed' };
     }
+  }
+
+  async adminPurchase(currentUser: any, dto: AdminPurchasePackageDto) {
+    if (currentUser.role !== Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: dto.adminId },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    if (!user.businessId) {
+      throw new BadRequestException('User has no business');
+    }
+
+    const pkg = await this.packageRepository.findOne({
+      where: { id: dto.packageId },
+    });
+    if (!pkg) throw new NotFoundException('Package not found');
+    if (pkg.status !== 'active') {
+      throw new BadRequestException('Package is not active');
+    }
+
+    const transactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    const payment = this.paymentRepository.create({
+      businessId: user.businessId,
+      packageId: pkg.id,
+      transactionId,
+      amount: Number(pkg.price),
+      status: PaymentStatus.SUCCESS,
+      adminId: user.id,
+      gatewayData: {
+        source: 'manual',
+        purchasedBy: currentUser.id,
+      },
+    } as any);
+
+    const savedPayment = (await this.paymentRepository.save(
+      payment,
+    )) as unknown as Payment;
+
+    const business = await this.applySubscription(savedPayment);
+
+    return {
+      success: true,
+      data: { payment: savedPayment, business },
+    };
+  }
+
+  async findAll(
+    query: PaginationQueryDto,
+    currentUser: any,
+  ): Promise<PaginatedResult<Record<string, any>>> {
+    if (currentUser.role !== Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const page = Math.max(+(query.page || 1), 1);
+    const limit = Math.min(Math.max(+(query.limit || 10), 1), 100);
+    const skip = (page - 1) * limit;
+    const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
+    const sortBy = query.sortBy || 'createdAt';
+
+    const where: any = {};
+    if (query.search) {
+      where.transactionId = ILike(`%${query.search}%`);
+    }
+
+    const [payments, total] = await this.paymentRepository.findAndCount({
+      where,
+      skip,
+      take: limit,
+      order: { [sortBy]: sortOrder },
+    });
+
+    const businessIds = [
+      ...new Set(payments.map((p) => p.businessId).filter(Boolean)),
+    ];
+
+    const emailMap = new Map<number, string | null>();
+    if (businessIds.length) {
+      const rows = await this.businessRepository
+        .createQueryBuilder('business')
+        .leftJoin(User, 'user', 'user.id = business.adminId')
+        .select(['business.id AS id', 'user.email AS email'])
+        .where('business.id IN (:...ids)', { ids: businessIds })
+        .getRawMany();
+      for (const r of rows) {
+        emailMap.set(Number(r.id), r.email ?? null);
+      }
+    }
+
+    const data = payments.map((p) => {
+      const { gatewayData, ...rest } = p;
+      return {
+        ...rest,
+        method: this.deriveMethod(gatewayData),
+        adminEmail: emailMap.get(p.businessId) ?? null,
+      };
+    });
+
+    return {
+      success: true,
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  private deriveMethod(gatewayData: any): string {
+    if (gatewayData?.source === 'manual') return 'manual';
+    const cardType = String(gatewayData?.card_type ?? '').toUpperCase();
+    if (cardType.startsWith('BKASH')) return 'bkash';
+    if (cardType.startsWith('NAGAD')) return 'nagad';
+    if (
+      cardType.startsWith('VISA') ||
+      cardType.startsWith('MASTERCARD') ||
+      cardType.startsWith('AMEX')
+    ) {
+      return 'visa';
+    }
+    return 'unknown';
+  }
+
+  private async applySubscription(payment: Payment): Promise<Business | null> {
+    const pkg = await this.packageRepository.findOne({
+      where: { id: payment.packageId },
+    });
+    if (!pkg) return null;
+
+    const business = await this.businessRepository.findOne({
+      where: { id: payment.businessId },
+    });
+    if (!business) return null;
+
+    const now = new Date();
+    const hasActiveSub =
+      business.subscription === SubscriptionStatus.ACTIVE &&
+      business.subEndDate &&
+      new Date(business.subEndDate) > now;
+    const baseDate = hasActiveSub ? new Date(business.subEndDate!) : now;
+    const endDate = new Date(baseDate);
+    endDate.setMonth(endDate.getMonth() + pkg.numberOfMonth);
+
+    business.subscription = SubscriptionStatus.ACTIVE;
+    business.subStartDate = now;
+    business.subEndDate = endDate;
+    return this.businessRepository.save(business);
   }
 
   async getPaymentStatus(tranId: string) {

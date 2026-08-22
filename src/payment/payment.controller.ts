@@ -4,6 +4,7 @@ import {
   Get,
   Body,
   Param,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -12,8 +13,10 @@ import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { PaymentService } from './payment.service';
 import { InitiatePaymentDto } from './dto/initiate-payment.dto';
+import { AdminPurchasePackageDto } from './dto/admin-purchase-package.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Payment')
 @Controller('payment')
@@ -35,6 +38,26 @@ export class PaymentController {
   @UseGuards(JwtAuthGuard)
   initiate(@Body() dto: InitiatePaymentDto, @CurrentUser() currentUser: any) {
     return this.paymentService.initiate(currentUser, dto.packageId);
+  }
+
+  @Post('admin/purchase')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  adminPurchase(
+    @Body() dto: AdminPurchasePackageDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.paymentService.adminPurchase(currentUser, dto);
+  }
+
+  @Get('admin/list')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  adminList(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.paymentService.findAll(query, currentUser);
   }
 
   @Get('status/:tranId')

@@ -6,7 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, Not, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -126,6 +126,40 @@ export class UsersService {
       data,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  async findAdminsWithBusiness(currentUser: any) {
+    if (currentUser.role !== Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const users = await this.userRepository.find({
+      where: {
+        role: Role.ADMIN,
+        businessId: Not(IsNull()),
+      },
+      relations: { business: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        businessId: true,
+        business: {
+          id: true,
+          businessName: true,
+        },
+      },
+      order: { createdAt: 'DESC' },
+    });
+
+    const data = users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      businessName: u.business?.businessName ?? null,
+    }));
+
+    return { success: true, data };
   }
 
   async getWaiters(currentUser: any) {
