@@ -243,4 +243,35 @@ export const PERMISSIONS_LIST = [
     module: 'dashboard',
     action: 'read',
   },
+
+  {
+    name: 'payment:create',
+    description: 'Create payments',
+    module: 'payment',
+    action: 'create',
+  },
+  {
+    name: 'payment:read',
+    description: 'View payments',
+    module: 'payment',
+    action: 'read',
+  },
+  {
+    name: 'payment:update',
+    description: 'Update payments',
+    module: 'payment',
+    action: 'update',
+  },
+  {
+    name: 'payment:delete',
+    description: 'Delete payments',
+    module: 'payment',
+    action: 'delete',
+  },
+  {
+    name: 'payment:refund',
+    description: 'Refund payments',
+    module: 'payment',
+    action: 'refund',
+  },
 ];
