@@ -73,6 +73,8 @@ export class DashboardController {
     @Query('year') year: string,
     @CurrentUser() currentUser: any,
   ) {
-    return this.dashboardService.getAdminCharts(currentUser, +year);
+    const parsedYear = +year;
+    const finalYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+    return this.dashboardService.getAdminCharts(currentUser, finalYear);
   }
 }

@@ -110,28 +110,53 @@ export class DashboardService {
       throw new ForbiddenException('Access denied');
     }
 
-    const [revenueData, businessData] = await Promise.all([
-      this.orderRepository
-        .createQueryBuilder('order')
-        .select('EXTRACT(MONTH FROM order.createdAt)', 'month')
-        .addSelect('COALESCE(SUM(order.subTotal), 0)', 'amount')
-        .where('order.billStatus = :billStatus', {
-          billStatus: BillStatus.PAID,
-        })
-        .andWhere('EXTRACT(YEAR FROM order.createdAt) = :year', { year })
-        .groupBy('EXTRACT(MONTH FROM order.createdAt)')
-        .orderBy('month', 'ASC')
-        .getRawMany(),
+    const now = new Date();
+    const tenDaysFromNow = new Date();
+    tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
 
-      this.businessRepository
-        .createQueryBuilder('business')
-        .select('EXTRACT(MONTH FROM business.createdAt)', 'month')
-        .addSelect('COUNT(business.id)', 'count')
-        .where('EXTRACT(YEAR FROM business.createdAt) = :year', { year })
-        .groupBy('EXTRACT(MONTH FROM business.createdAt)')
-        .orderBy('month', 'ASC')
-        .getRawMany(),
-    ]);
+    const [revenueData, businessData, subscriptionData, expiringSoonCount] =
+      await Promise.all([
+        this.paymentRepository
+          .createQueryBuilder('payment')
+          .select('EXTRACT(MONTH FROM payment.createdAt)', 'month')
+          .addSelect('COALESCE(SUM(payment.amount), 0)', 'amount')
+          .where('payment.status = :status', {
+            status: PaymentStatus.SUCCESS,
+          })
+          .andWhere('EXTRACT(YEAR FROM payment.createdAt) = :year', { year })
+          .groupBy('EXTRACT(MONTH FROM payment.createdAt)')
+          .orderBy('month', 'ASC')
+          .getRawMany(),
+
+        this.businessRepository
+          .createQueryBuilder('business')
+          .select('EXTRACT(MONTH FROM business.createdAt)', 'month')
+          .addSelect('COUNT(business.id)', 'count')
+          .where('EXTRACT(YEAR FROM business.createdAt) = :year', { year })
+          .groupBy('EXTRACT(MONTH FROM business.createdAt)')
+          .orderBy('month', 'ASC')
+          .getRawMany(),
+
+        this.businessRepository
+          .createQueryBuilder('business')
+          .select('business.subscription', 'status')
+          .addSelect('COUNT(business.id)', 'count')
+          .where('EXTRACT(YEAR FROM business.createdAt) = :year', { year })
+          .groupBy('business.subscription')
+          .getRawMany(),
+
+        this.businessRepository
+          .createQueryBuilder('business')
+          .where('business.subscription = :status', {
+            status: SubscriptionStatus.ACTIVE,
+          })
+          .andWhere('EXTRACT(YEAR FROM business.createdAt) = :year', { year })
+          .andWhere('business.subEndDate BETWEEN :now AND :tenDays', {
+            now,
+            tenDays: tenDaysFromNow,
+          })
+          .getCount(),
+      ]);
 
     const revenueMap = new Map(
       revenueData.map((r: any) => [Number(r.month), Number(r.amount)]),
@@ -140,17 +165,46 @@ export class DashboardService {
       businessData.map((b: any) => [Number(b.month), Number(b.count)]),
     );
 
-    const revenue = Array.from({ length: 12 }, (_, i) => ({
-      month: i + 1,
-      amount: revenueMap.get(i + 1) || 0,
-    }));
+    const revenuePerMonth = Array.from({ length: 12 }, (_, i) => {
+      const monthNumber = i + 1;
+      const monthKey = `${year}-${String(monthNumber).padStart(2, '0')}`;
+      return {
+        month: monthKey,
+        monthName: this.getMonthName(monthKey),
+        amount: Number(revenueMap.get(monthNumber) || 0),
+      };
+    });
 
-    const businesses = Array.from({ length: 12 }, (_, i) => ({
-      month: i + 1,
-      count: businessMap.get(i + 1) || 0,
-    }));
+    const businesses = Array.from({ length: 12 }, (_, i) => {
+      const monthNumber = i + 1;
+      const monthKey = `${year}-${String(monthNumber).padStart(2, '0')}`;
+      return {
+        month: monthKey,
+        monthName: this.getMonthName(monthKey),
+        count: Number(businessMap.get(monthNumber) || 0),
+      };
+    });
 
-    return { success: true, data: { revenue, businesses } };
+    const subscriptionMap = new Map(
+      subscriptionData.map((s: any) => [String(s.status), Number(s.count)]),
+    );
+
+    const pieChart = [
+      {
+        name: 'Active Subscriptions',
+        value: subscriptionMap.get(SubscriptionStatus.ACTIVE) || 0,
+      },
+      {
+        name: 'Inactive Subscriptions',
+        value: subscriptionMap.get(SubscriptionStatus.INACTIVE) || 0,
+      },
+      {
+        name: 'Expire within 10 days',
+        value: expiringSoonCount,
+      },
+    ];
+
+    return { success: true, data: { revenuePerMonth, businesses, pieChart } };
   }
 
   async getSummary(currentUser: any, startDate?: string, endDate?: string) {
@@ -478,26 +532,6 @@ export class DashboardService {
     ];
 
     // Convert YYYY-MM to Jan, Feb, Mar, etc.
-    const getMonthName = (month: string) => {
-      const monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-
-      const monthNumber = Number(month.split('-')[1]);
-
-      return monthNames[monthNumber - 1];
-    };
 
     return {
       success: true,
@@ -511,13 +545,13 @@ export class DashboardService {
 
         revenuePerMonth: labels.map((month, index) => ({
           month,
-          monthName: getMonthName(month),
+          monthName: this.getMonthName(month),
           amount: revenue[index],
         })),
 
         netProfitPerMonth: labels.map((month, index) => ({
           month,
-          monthName: getMonthName(month),
+          monthName: this.getMonthName(month),
           amount: netProfit[index],
         })),
 
@@ -736,5 +770,26 @@ export class DashboardService {
       return {};
     }
     return { businessId: currentUser.businessId };
+  }
+
+  private getMonthName(month: string): string {
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    const monthNumber = Number(month.split('-')[1]);
+
+    return monthNames[monthNumber - 1];
   }
 }
