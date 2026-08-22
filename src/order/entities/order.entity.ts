@@ -19,10 +19,10 @@ export class Order {
   @Column({ nullable: true })
   orderId: string;
 
-  @Column()
+  @Column({ nullable: true })
   tableId: number;
 
-  @ManyToOne(() => Table)
+  @ManyToOne(() => Table, { nullable: true })
   @JoinColumn({ name: 'tableId' })
   table: Table;
 
