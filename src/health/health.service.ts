@@ -4,26 +4,16 @@ import { Repository } from 'typeorm';
 import * as os from 'os';
 import { ServerMetrics } from './entities/server-metrics.entity';
 
+export interface HealthMetric {
+  name: string;
+  value: string | number;
+}
+
 export interface CurrentHealth {
   status: 'healthy' | 'degraded' | 'unhealthy';
-  timestamp: Date;
   uptime: string;
-  memory: {
-    heapUsed: number;
-    heapTotal: number;
-    rssMemory: number;
-    usagePercent: number;
-  };
-  cpu: {
-    usagePercent: number;
-  };
-  requests: {
-    active: number;
-    total: number;
-    errors: number;
-    errorRate: number;
-    avgResponseTime: number;
-  };
+  cpuUsage: number;
+  memoryUsage: number;
 }
 
 export interface ChartDataPoint {
@@ -141,17 +131,9 @@ export class HealthService {
     return saved;
   }
 
-  getCurrentHealth(): CurrentHealth {
+  getCurrentHealth(): HealthMetric[] {
     const memUsage = process.memoryUsage();
     const cpuUsage = this.getCpuUsage();
-    const avgResponseTime =
-      this.responseTimes.length > 0
-        ? this.responseTimes.reduce((a, b) => a + b, 0) /
-          this.responseTimes.length
-        : 0;
-
-    const totalReqs = this.requestCount + this.errorCount;
-    const errorRate = totalReqs > 0 ? (this.errorCount / totalReqs) * 100 : 0;
 
     let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
     if (cpuUsage > 80 || memUsage.heapUsed / memUsage.heapTotal > 0.85) {
@@ -160,29 +142,16 @@ export class HealthService {
       status = 'degraded';
     }
 
-    return {
-      status,
-      timestamp: new Date(),
-      uptime: this.formatUptime(Math.floor(process.uptime())),
-      memory: {
-        heapUsed: memUsage.heapUsed,
-        heapTotal: memUsage.heapTotal,
-        rssMemory: memUsage.rss,
-        usagePercent:
-          Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100 * 100) /
-          100,
+    return [
+      { name: 'Health', value: status },
+      { name: 'Uptime', value: this.formatUptime(Math.floor(process.uptime())) },
+      { name: 'CPU Usage', value: cpuUsage },
+      {
+        name: 'Memory Usage',
+        value:
+          Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100 * 100) / 100,
       },
-      cpu: {
-        usagePercent: cpuUsage,
-      },
-      requests: {
-        active: this.activeRequests,
-        total: this.requestCount,
-        errors: this.errorCount,
-        errorRate: Math.round(errorRate * 100) / 100,
-        avgResponseTime: Math.round(avgResponseTime * 100) / 100,
-      },
-    };
+    ];
   }
 
   async getHealthHistory(
@@ -196,7 +165,7 @@ export class HealthService {
     const now = new Date();
     const start = startDate
       ? new Date(startDate)
-      : new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      : new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const end = endDate ? new Date(endDate) : now;
 
     start.setHours(0, 0, 0, 0);
