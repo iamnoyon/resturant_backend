@@ -92,9 +92,7 @@ export class DashboardService {
       });
     }
 
-    qb.orderBy(`business.${sortBy}`, sortOrder)
-      .skip(skip)
-      .take(limit);
+    qb.orderBy(`business.${sortBy}`, sortOrder).skip(skip).take(limit);
 
     const [businesses, total] = await qb.getManyAndCount();
 
