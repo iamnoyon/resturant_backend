@@ -6,12 +6,14 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Role } from '../../common/enums/role.enum';
 import { UserStatus } from '../../common/enums/user-status.enum';
 import { Business } from '../../business/entities/business.entity';
 
 @Entity('users')
+@Index('idx_users_business', ['businessId'])
 export class User {
   @PrimaryGeneratedColumn()
   id: number;

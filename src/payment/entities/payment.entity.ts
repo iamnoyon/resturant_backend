@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum PaymentStatus {
@@ -14,6 +15,8 @@ export enum PaymentStatus {
 }
 
 @Entity('payments')
+@Index('idx_payments_business_status', ['businessId', 'status'])
+@Index('idx_payments_created', ['createdAt'])
 export class Payment {
   @PrimaryGeneratedColumn()
   id: number;

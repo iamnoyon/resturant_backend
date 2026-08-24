@@ -6,11 +6,15 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Business } from '../../business/entities/business.entity';
 import { Category } from '../../category/entities/category.entity';
 
 @Entity('products')
+@Index('idx_products_business', ['businessId'])
+@Index('idx_products_business_active', ['businessId', 'isActive'])
+@Index('idx_products_category', ['categoryId'])
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;

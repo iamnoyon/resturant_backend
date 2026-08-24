@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -70,10 +69,13 @@ export class OrderService {
 
     const orderRevenue = Number(
       createOrderDto.subTotal ??
-        (Number(createOrderDto.totalBill || 0) - Number(createOrderDto.discount || 0)),
+        Number(createOrderDto.totalBill || 0) -
+          Number(createOrderDto.discount || 0),
     );
     const calculatedProfit = Number(
-      (orderRevenue - productCostTotal.reduce((sum, value) => sum + value, 0)).toFixed(2),
+      (
+        orderRevenue - productCostTotal.reduce((sum, value) => sum + value, 0)
+      ).toFixed(2),
     );
 
     const order = this.orderRepository.create({
@@ -140,49 +142,49 @@ export class OrderService {
   }
 
   async findOne(id: number, currentUser: any) {
+    const where: any = { id };
+    if (
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
+    ) {
+      where.businessId = currentUser.businessId;
+    }
     const order = await this.orderRepository.findOne({
-      where: { id },
+      where,
       relations: { table: true },
     });
     if (!order) throw new NotFoundException('Order not found');
-    if (
-      (currentUser.role === Role.ADMIN ||
-        currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
-      order.businessId !== currentUser.businessId
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
     return { success: true, data: order };
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto, currentUser: any) {
-    const order = await this.orderRepository.findOne({ where: { id } });
-    if (!order) throw new NotFoundException('Order not found');
+    const where: any = { id };
     if (
-      (currentUser.role === Role.ADMIN ||
-        currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
-      order.businessId !== currentUser.businessId
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      throw new ForbiddenException('Access denied');
+      where.businessId = currentUser.businessId;
     }
+    const order = await this.orderRepository.findOne({ where });
+    if (!order) throw new NotFoundException('Order not found');
     Object.assign(order, updateOrderDto, { updatedBy: currentUser.id });
     const saved = await this.orderRepository.save(order);
     return { success: true, message: 'Order updated', data: saved };
   }
 
   async remove(id: number, currentUser: any) {
-    const order = await this.orderRepository.findOne({ where: { id } });
-    if (!order) throw new NotFoundException('Order not found');
+    const where: any = { id };
     if (
-      (currentUser.role === Role.ADMIN ||
-        currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
-      order.businessId !== currentUser.businessId
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      throw new ForbiddenException('Access denied');
+      where.businessId = currentUser.businessId;
     }
+    const order = await this.orderRepository.findOne({ where });
+    if (!order) throw new NotFoundException('Order not found');
     if (order.billStatus === BillStatus.PAID) {
       throw new BadRequestException('Cannot delete a paid order');
     }
@@ -205,16 +207,16 @@ export class OrderService {
   }
 
   async updateBillStatus(id: number, billStatus: BillStatus, currentUser: any) {
-    const order = await this.orderRepository.findOne({ where: { id } });
-    if (!order) throw new NotFoundException('Order not found');
+    const where: any = { id };
     if (
-      (currentUser.role === Role.ADMIN ||
-        currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
-      order.businessId !== currentUser.businessId
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.CASHIER ||
+      currentUser.role === Role.WAITER
     ) {
-      throw new ForbiddenException('Access denied');
+      where.businessId = currentUser.businessId;
     }
+    const order = await this.orderRepository.findOne({ where });
+    if (!order) throw new NotFoundException('Order not found');
     order.billStatus = billStatus;
     order.updatedBy = currentUser.id;
     const saved = await this.orderRepository.save(order);

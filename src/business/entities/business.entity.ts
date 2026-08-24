@@ -4,10 +4,13 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { SubscriptionStatus } from '../../common/enums/subscription-status.enum';
 
 @Entity('businesses')
+@Index('idx_businesses_admin', ['adminId'])
+@Index('idx_businesses_name', ['businessName'])
 export class Business {
   @PrimaryGeneratedColumn()
   id: number;

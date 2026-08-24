@@ -2,7 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { BillStatus } from '../../common/enums/bill-status.enum';
 
 export class CreateOrderDto {
-  @ApiProperty({ example: 1, description: 'Table ID reference', required: false })
+  @ApiProperty({
+    example: 1,
+    description: 'Table ID reference',
+    required: false,
+  })
   tableId?: number;
 
   @ApiProperty({

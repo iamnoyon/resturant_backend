@@ -6,12 +6,22 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { BillStatus } from '../../common/enums/bill-status.enum';
 import { Business } from '../../business/entities/business.entity';
 import { Table } from '../../table/entities/table.entity';
 
 @Entity('orders')
+@Index('idx_orders_business_created', ['businessId', 'createdAt'])
+@Index('idx_orders_business_status', ['businessId', 'billStatus'])
+@Index('idx_orders_business_status_created', [
+  'businessId',
+  'billStatus',
+  'createdAt',
+])
+@Index('idx_orders_table', ['tableId'])
+@Index('idx_orders_orderId', ['orderId'])
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;

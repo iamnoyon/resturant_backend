@@ -69,13 +69,14 @@ export class DashboardController {
 
   @Get('admin/charts')
   @RequirePermissions('dashboard:read')
-  @ApiOperation({ summary: 'Superadmin monthly revenue and business creation for a year' })
-  getAdminCharts(
-    @Query('year') year: string,
-    @CurrentUser() currentUser: any,
-  ) {
+  @ApiOperation({
+    summary: 'Superadmin monthly revenue and business creation for a year',
+  })
+  getAdminCharts(@Query('year') year: string, @CurrentUser() currentUser: any) {
     const parsedYear = +year;
-    const finalYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+    const finalYear = Number.isFinite(parsedYear)
+      ? parsedYear
+      : new Date().getFullYear();
     return this.dashboardService.getAdminCharts(currentUser, finalYear);
   }
 

@@ -523,10 +523,7 @@ export class DashboardService {
           .createQueryBuilder('order')
           .select('EXTRACT(YEAR FROM order.createdAt)', 'year')
           .addSelect('EXTRACT(MONTH FROM order.createdAt)', 'month')
-          .addSelect(
-            'COALESCE(SUM(order.discount), 0)',
-            'amount',
-          )
+          .addSelect('COALESCE(SUM(order.discount), 0)', 'amount')
           .where('order.billStatus = :billStatus', {
             billStatus: BillStatus.PAID,
           })
