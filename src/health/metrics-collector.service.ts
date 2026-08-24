@@ -27,7 +27,7 @@ export class MetricsCollector implements OnModuleInit {
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async handleMetricsCleanup() {
     try {
-      await this.healthService.cleanupOldMetrics(7);
+      await this.healthService.cleanupOldMetrics(3);
       this.logger.log('Old metrics cleaned up');
     } catch (error) {
       this.logger.error('Failed to cleanup old metrics', error);

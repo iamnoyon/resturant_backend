@@ -16,25 +16,12 @@ export interface CurrentHealth {
   memoryUsage: number;
 }
 
-export interface ChartDataPoint {
-  timestamp: string;
-  cpuUsage: number;
-  memoryUsage: number;
-  heapUsed: number;
-  heapTotal: number;
-  requestCount: number;
-  errorCount: number;
-  avgResponseTime: number;
-  uptime: number;
-}
-
 export interface HealthChartData {
   labels: string[];
   datasets: {
     name: string;
     data: number[];
   }[];
-  dataPoints: ChartDataPoint[];
 }
 
 @Injectable()
@@ -165,7 +152,7 @@ export class HealthService {
     const now = new Date();
     const start = startDate
       ? new Date(startDate)
-      : new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      : new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const end = endDate ? new Date(endDate) : now;
 
     start.setHours(0, 0, 0, 0);
@@ -181,7 +168,6 @@ export class HealthService {
       return {
         labels: [],
         datasets: [],
-        dataPoints: [],
       };
     }
 
@@ -192,18 +178,6 @@ export class HealthService {
         minute: '2-digit',
       });
     });
-
-    const dataPoints: ChartDataPoint[] = metrics.map((m) => ({
-      timestamp: m.timestamp.toISOString(),
-      cpuUsage: m.cpuUsage,
-      memoryUsage: m.memoryUsage,
-      heapUsed: m.heapUsed,
-      heapTotal: m.heapTotal,
-      requestCount: m.requestCount,
-      errorCount: m.errorCount,
-      avgResponseTime: m.avgResponseTime,
-      uptime: m.uptime,
-    }));
 
     return {
       labels,
@@ -229,7 +203,6 @@ export class HealthService {
           data: metrics.map((m) => m.errorCount),
         },
       ],
-      dataPoints,
     };
   }
 
