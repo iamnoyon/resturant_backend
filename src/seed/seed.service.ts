@@ -25,7 +25,7 @@ export class SeedService implements OnModuleInit {
 
   async seed() {
     await this.seedPermissions();
-    await this.seedUsers();
+    await this.seedSuperAdmin();
   }
 
   private async seedPermissions() {
@@ -43,65 +43,31 @@ export class SeedService implements OnModuleInit {
     console.log(`[Seed] Added: ${newPerms.map((p) => p.name).join(', ')}`);
   }
 
-  private async seedUsers() {
-    const userCount = await this.userRepository.count();
-    if (userCount > 0) {
-      const superadmin = await this.userRepository.findOne({
-        where: { role: Role.SUPERADMIN },
-      });
+  private async seedSuperAdmin() {
+    const superadmin = await this.userRepository.findOne({
+      where: { role: Role.SUPERADMIN },
+    });
 
-      if (superadmin) {
-        const allPerms = await this.permissionRepository.find();
-        const allPermNames = allPerms.map((p) => p.name);
-        const needsUpdate =
-          !superadmin.permissions ||
-          superadmin.permissions.length < allPermNames.length ||
-          !allPermNames.every((p) => superadmin.permissions.includes(p));
+    if (superadmin) {
+      const allPerms = await this.permissionRepository.find();
+      const allPermNames = allPerms.map((p) => p.name);
+      const needsUpdate =
+        !superadmin.permissions ||
+        superadmin.permissions.length < allPermNames.length ||
+        !allPermNames.every((p) => superadmin.permissions.includes(p));
 
-        if (needsUpdate) {
-          await this.userRepository.update(superadmin.id, {
-            permissions: allPermNames,
-          });
-          console.log('[Seed] Superadmin permissions synced.');
-        }
+      if (needsUpdate) {
+        await this.userRepository.update(superadmin.id, {
+          permissions: allPermNames,
+        });
+        console.log('[Seed] Superadmin permissions synced.');
+      } else {
+        console.log('[Seed] Superadmin already exists, skipping.');
       }
-
-      const admins = await this.userRepository.find({
-        where: { role: Role.ADMIN },
-      });
-
-      if (admins.length > 0) {
-        const allPerms = await this.permissionRepository.find();
-        const adminPerms = allPerms
-          .filter(
-            (p) =>
-              p.module !== 'business' ||
-              (p.module === 'business' &&
-                p.action !== 'create' &&
-                p.action !== 'delete'),
-          )
-          .map((p) => p.name);
-
-        for (const admin of admins) {
-          const needsUpdate =
-            !admin.permissions ||
-            admin.permissions.length < adminPerms.length ||
-            !adminPerms.every((p) => admin.permissions.includes(p));
-
-          if (needsUpdate) {
-            await this.userRepository.update(admin.id, {
-              permissions: adminPerms,
-            });
-            console.log(`[Seed] Admin (${admin.email}) permissions synced.`);
-          }
-        }
-      }
-
-      console.log('[Seed] Users already exist, skipping user seed.');
       return;
     }
 
-    console.log('[Seed] No users found. Seeding superadmin...');
+    console.log('[Seed] No superadmin found. Creating...');
 
     const allPerms = await this.permissionRepository.find();
     const allPermNames = allPerms.map((p) => p.name);
@@ -111,7 +77,7 @@ export class SeedService implements OnModuleInit {
       10,
     );
 
-    const superadmin = this.userRepository.create({
+    const created = this.userRepository.create({
       name: this.configService.get<string>('SUPERADMIN_NAME', 'Super Admin'),
       email: this.configService.get<string>(
         'SUPERADMIN_EMAIL',
@@ -124,8 +90,7 @@ export class SeedService implements OnModuleInit {
       permissions: allPermNames,
     } as unknown as User);
 
-    const savedSuperadmin = await this.userRepository.save(superadmin);
+    const savedSuperadmin = await this.userRepository.save(created);
     console.log(`[Seed] Superadmin created: ${savedSuperadmin.email}`);
-    console.log('[Seed] Seeding completed.');
   }
 }
