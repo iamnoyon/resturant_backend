@@ -245,6 +245,13 @@ export const PERMISSIONS_LIST = [
   },
 
   {
+    name: 'health:read',
+    description: 'Access server health monitoring',
+    module: 'health',
+    action: 'read',
+  },
+
+  {
     name: 'payment:create',
     description: 'Create payments',
     module: 'payment',

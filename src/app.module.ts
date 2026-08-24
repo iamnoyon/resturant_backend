@@ -17,7 +17,9 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { PackageModule } from './package/package.module';
 import { PaymentModule } from './payment/payment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { HealthModule } from './health/health.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { RequestTrackerMiddleware } from './common/middleware/request-tracker.middleware';
 
 @Module({
   imports: [
@@ -80,6 +82,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     PackageModule,
     PaymentModule,
     DashboardModule,
+    HealthModule,
   ],
   providers: [
     {
@@ -90,6 +93,6 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(LoggerMiddleware, RequestTrackerMiddleware).forRoutes('*');
   }
 }
