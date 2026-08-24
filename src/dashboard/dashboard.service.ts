@@ -101,7 +101,7 @@ export class DashboardService {
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
 
-    const data = businesses.map((b) => {
+    const data = businesses.map((b: any) => {
       const end = b.subEndDate ? new Date(b.subEndDate) : null;
       let daysToExpire = 0;
       if (end) {
