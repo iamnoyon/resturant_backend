@@ -7,9 +7,11 @@ import { Product } from '../product/entities/product.entity';
 import { Table } from '../table/entities/table.entity';
 import { Business } from '../business/entities/business.entity';
 import { Payment, PaymentStatus } from '../payment/entities/payment.entity';
+import { User } from '../users/entities/user.entity';
 import { BillStatus } from '../common/enums/bill-status.enum';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Role } from '../common/enums/role.enum';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 interface PeriodMetrics {
   totalRevenue: number;
@@ -50,6 +52,93 @@ export class DashboardService {
     @InjectRepository(Payment)
     private paymentRepository: Repository<Payment>,
   ) {}
+
+  async getExpiringBusinesses(currentUser: any, query: PaginationQueryDto) {
+    if (currentUser.role !== Role.SUPERADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const page = Math.max(+(query.page || 1), 1);
+    const limit = Math.min(Math.max(+(query.limit || 10), 1), 100);
+    const skip = (page - 1) * limit;
+    const sortBy = query.sortBy || 'subEndDate';
+    const sortOrder = query.sortOrder === 'DESC' ? 'DESC' : 'ASC';
+
+    const now = new Date();
+    const tenDaysFromNow = new Date();
+    tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
+    tenDaysFromNow.setHours(23, 59, 59, 999);
+
+    const qb = this.businessRepository
+      .createQueryBuilder('business')
+      .leftJoinAndMapOne(
+        'business.admin',
+        User,
+        'admin',
+        'admin.id = business.adminId',
+      )
+      .where('business.subscription = :status', {
+        status: SubscriptionStatus.ACTIVE,
+      })
+      .andWhere('business.subEndDate IS NOT NULL')
+      .andWhere('business.subEndDate BETWEEN :now AND :tenDays', {
+        now,
+        tenDays: tenDaysFromNow,
+      });
+
+    if (query.search) {
+      qb.andWhere('business.businessName ILIKE :search', {
+        search: `%${query.search}%`,
+      });
+    }
+
+    qb.orderBy(`business.${sortBy}`, sortOrder)
+      .skip(skip)
+      .take(limit);
+
+    const [businesses, total] = await qb.getManyAndCount();
+
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+
+    const data = businesses.map((b) => {
+      const end = b.subEndDate ? new Date(b.subEndDate) : null;
+      let daysToExpire = 0;
+      if (end) {
+        const endStart = new Date(end);
+        endStart.setHours(0, 0, 0, 0);
+        daysToExpire = Math.ceil(
+          (endStart.getTime() - todayStart.getTime()) / MS_PER_DAY,
+        );
+      }
+
+      return {
+        businessId: b.id,
+        businessName: b.businessName,
+        subEndDate: b.subEndDate,
+        daysToExpire,
+        status: 'expiring_soon',
+        admin: b.admin
+          ? {
+              id: b.admin.id,
+              name: b.admin.name,
+              email: b.admin.email,
+            }
+          : null,
+      };
+    });
+
+    return {
+      success: true,
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
   async getAdminOverview(currentUser: any) {
     if (currentUser.role !== Role.SUPERADMIN) {

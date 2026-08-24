@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import {
   DateRangeQueryDto,
   RecentOrdersQueryDto,
@@ -76,5 +77,17 @@ export class DashboardController {
     const parsedYear = +year;
     const finalYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
     return this.dashboardService.getAdminCharts(currentUser, finalYear);
+  }
+
+  @Get('admin/expiring-businesses')
+  @RequirePermissions('dashboard:read')
+  @ApiOperation({
+    summary: 'Superadmin: list of businesses expiring within 10 days',
+  })
+  getExpiringBusinesses(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.dashboardService.getExpiringBusinesses(currentUser, query);
   }
 }
