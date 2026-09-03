@@ -99,7 +99,9 @@ export class UsersService {
 
     const where: any = {};
 
-    if (currentUser.role === Role.ADMIN) {
+    if (currentUser.role === Role.SUPERADMIN) {
+      where.role = Role.ADMIN;
+    } else if (currentUser.role === Role.ADMIN) {
       where.businessId = currentUser.businessId;
     } else if (currentUser.role === Role.CASHIER) {
       where.id = currentUser.id;
