@@ -49,11 +49,20 @@ export class UsersService {
       throw new ForbiddenException('You are not authorized to create users');
     }
 
-    const existingUser = await this.userRepository.findOne({
+    const existingEmail = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
-    if (existingUser) {
+    if (existingEmail) {
       throw new ConflictException('Email already exists');
+    }
+
+    if (createUserDto.phone) {
+      const existingPhone = await this.userRepository.findOne({
+        where: { phone: createUserDto.phone },
+      });
+      if (existingPhone) {
+        throw new ConflictException('Phone number already exists');
+      }
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
