@@ -9,6 +9,7 @@ import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import {
   DateRangeQueryDto,
   RecentOrdersQueryDto,
+  WaiterPerformanceQueryDto,
 } from './dto/dashboard-query.dto';
 
 @ApiTags('Dashboard')
@@ -90,5 +91,20 @@ export class DashboardController {
     @CurrentUser() currentUser: any,
   ) {
     return this.dashboardService.getExpiringBusinesses(currentUser, query);
+  }
+
+  @Get('waiter-performance')
+  @RequirePermissions('dashboard:waiter-performance')
+  @ApiOperation({
+    summary: 'Get monthly performance report for waiters (paid orders)',
+  })
+  getWaiterPerformance(
+    @Query() query: WaiterPerformanceQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.dashboardService.getWaiterPerformance(
+      currentUser,
+      query.month,
+    );
   }
 }

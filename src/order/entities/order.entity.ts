@@ -11,6 +11,7 @@ import {
 import { BillStatus } from '../../common/enums/bill-status.enum';
 import { Business } from '../../business/entities/business.entity';
 import { Table } from '../../table/entities/table.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('orders')
 @Index('idx_orders_business_created', ['businessId', 'createdAt'])
@@ -63,6 +64,10 @@ export class Order {
 
   @Column({ nullable: true })
   waiterId: number;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'waiterId' })
+  waiter: User;
 
   @Column()
   createdBy: number;

@@ -1,5 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsInt, Min, Max } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class DateRangeQueryDto {
@@ -33,4 +40,14 @@ export class RecentOrdersQueryDto {
   @Min(1)
   @Max(50)
   limit?: number;
+}
+
+export class WaiterPerformanceQueryDto {
+  @ApiPropertyOptional({
+    description: 'Month name (e.g. September, January)',
+    example: 'September',
+  })
+  @IsOptional()
+  @IsString()
+  month?: string;
 }

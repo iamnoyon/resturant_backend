@@ -243,6 +243,12 @@ export const PERMISSIONS_LIST = [
     module: 'dashboard',
     action: 'read',
   },
+  {
+    name: 'dashboard:waiter-performance',
+    description: 'View waiter performance report',
+    module: 'dashboard',
+    action: 'waiter-performance',
+  },
 
   {
     name: 'health:read',

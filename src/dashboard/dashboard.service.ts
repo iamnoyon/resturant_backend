@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from '../order/entities/order.entity';
@@ -670,6 +670,65 @@ export class DashboardService {
     }));
 
     return { success: true, data };
+  }
+
+  async getWaiterPerformance(currentUser: any, monthName?: string) {
+    const monthNames = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december',
+    ];
+
+    const now = new Date();
+    let monthNumber: number;
+
+    if (monthName) {
+      const normalized = monthName.trim().toLowerCase();
+      const found = monthNames.indexOf(normalized);
+      if (found === -1) {
+        throw new BadRequestException(
+          `Invalid month name "${monthName}". Use full month name like "September".`,
+        );
+      }
+      monthNumber = found + 1;
+    } else {
+      monthNumber = now.getMonth() + 1;
+    }
+
+    const year = now.getFullYear();
+    const businessFilter = this.businessFilter(currentUser);
+
+    const start = new Date(year, monthNumber - 1, 1);
+    const end = new Date(year, monthNumber, 0, 23, 59, 59, 999);
+
+    const results = await this.orderRepository
+      .createQueryBuilder('order')
+      .select('order.waiterId', 'waiterId')
+      .addSelect('COUNT(order.id)', 'totalPaidOrders')
+      .leftJoinAndSelect('order.waiter', 'waiter')
+      .where('order.billStatus = :billStatus', { billStatus: BillStatus.PAID })
+      .andWhere('order.createdAt BETWEEN :start AND :end', { start, end })
+      .andWhere('order.waiterId IS NOT NULL')
+      .andWhere(businessFilter)
+      .groupBy('order.waiterId')
+      .addGroupBy('waiter.id')
+      .addGroupBy('waiter.name')
+      .orderBy('totalPaidOrders', 'DESC')
+      .getRawMany();
+
+    const data = results.map((r) => ({
+      waiterId: Number(r.waiterId),
+      waiterName: r.waiter_name || r.waiter?.name || `Waiter #${r.waiterId}`,
+      totalPaidOrders: Number(r.totalPaidOrders),
+    }));
+
+    return {
+      success: true,
+      data: {
+        month: monthNames[monthNumber - 1].charAt(0).toUpperCase() + monthNames[monthNumber - 1].slice(1),
+        year,
+        waiters: data,
+      },
+    };
   }
 
   private async computePeriodMetrics(
