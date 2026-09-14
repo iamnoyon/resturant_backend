@@ -10,6 +10,7 @@ import { Order } from './entities/order.entity';
 import { Product } from '../product/entities/product.entity';
 import { Business } from '../business/entities/business.entity';
 import { Table } from '../table/entities/table.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateWaiterOrderDto } from './dto/create-waiter-order.dto';
 import { UpdateWaiterOrderDto } from './dto/update-waiter-order.dto';
@@ -34,6 +35,8 @@ export class OrderService {
     private businessRepository: Repository<Business>,
     @InjectRepository(Table)
     private tableRepository: Repository<Table>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private dataSource: DataSource,
     private tokenService: TokenService,
   ) {}
@@ -500,6 +503,67 @@ export class OrderService {
     };
     delete row.table;
     return { success: true, data: row };
+  }
+
+  async printInvoice(orderId: string, currentUser: any) {
+    const where: any = { orderId };
+    if (currentUser.businessId) {
+      where.businessId = currentUser.businessId;
+    }
+
+    const order = await this.orderRepository.findOne({ where });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const business = order.businessId
+      ? await this.businessRepository.findOne({
+          where: { id: order.businessId },
+        })
+      : null;
+
+    let admin: User | null = null;
+    if (business) {
+      admin = await this.userRepository.findOne({
+        where: { id: business.adminId },
+      });
+      if (!admin) {
+        admin = await this.userRepository.findOne({
+          where: { businessId: business.id, role: Role.ADMIN },
+          order: { id: 'ASC' },
+        });
+      }
+    }
+
+    const items = Array.isArray(order.products) ? order.products : [];
+    const productIds = items.map((item) => item.productId);
+    const products = productIds.length
+      ? await this.productRepository.find({ where: { id: In(productIds) } })
+      : [];
+    const productMap = new Map(products.map((product) => [product.id, product]));
+
+    const invoiceItems = items.map((item) => {
+      const product = productMap.get(item.productId);
+      return {
+        qty: item.quantity,
+        name: product?.productName ?? null,
+        price: product ? Number(product.soldPrice) : 0,
+      };
+    });
+
+    return {
+      restaurant: {
+        name: business?.businessName || "Engineer's Restaurant",
+        address: `${business?.area ?? ''}, ${business?.thana ?? ''}`,
+        phone: admin?.phone ?? null,
+        logo: '/cafe_icon.png',
+      },
+      invoiceNo: `INV-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      items: invoiceItems,
+      taxRate: 0,
+      discount: Number(order.discount || 0),
+      tax: 0,
+      total: Number(order.subTotal || 0).toFixed(2),
+    };
   }
 
   async findOne(id: number, currentUser: any) {

@@ -82,6 +82,15 @@ export class OrderController {
     return this.orderService.findWaiterOrder(id, currentUser);
   }
 
+  @Get('invoice/:orderId')
+  @RequirePermissions('order:read', 'order:waiter-read')
+  printInvoice(
+    @Param('orderId') orderId: string,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.orderService.printInvoice(orderId, currentUser);
+  }
+
   @Get(':id')
   @RequirePermissions('order:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {
