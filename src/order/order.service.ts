@@ -38,6 +38,18 @@ export class OrderService {
     private tokenService: TokenService,
   ) {}
 
+  private assertSubscriptionActive(business: Business | null) {
+    const isActive =
+      business?.subscription === SubscriptionStatus.ACTIVE &&
+      !!business?.subEndDate &&
+      new Date(business.subEndDate) > new Date();
+    if (!isActive) {
+      throw new BadRequestException(
+        'Subscription is not active. Renew ASAP to continue',
+      );
+    }
+  }
+
   async create(createOrderDto: CreateOrderDto, currentUser: any) {
     if (!currentUser.businessId) {
       throw new BadRequestException('You must create a restaurant first');
@@ -46,11 +58,8 @@ export class OrderService {
     const business = await this.businessRepository.findOne({
       where: { id: currentUser.businessId },
     });
-    if (business?.subscription !== SubscriptionStatus.ACTIVE) {
-      throw new BadRequestException(
-        'Subscription expired. Renew ASAP to continue',
-      );
-    }
+    this.assertSubscriptionActive(business);
+
     const now = new Date();
     const dateStr =
       now.getFullYear().toString() +
@@ -126,11 +135,7 @@ export class OrderService {
     const business = await this.businessRepository.findOne({
       where: { id: currentUser.businessId },
     });
-    if (business?.subscription !== SubscriptionStatus.ACTIVE) {
-      throw new BadRequestException(
-        'Subscription expired. Renew ASAP to continue',
-      );
-    }
+    this.assertSubscriptionActive(business);
 
     const tableId = Number(createWaiterOrderDto?.tableId);
     if (!tableId) {
