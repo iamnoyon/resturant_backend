@@ -67,6 +67,15 @@ export class OrderController {
     return this.orderService.findAll(query, currentUser);
   }
 
+  @Get('waiter')
+  @RequirePermissions('order:waiter-read')
+  findWaiterOrders(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.orderService.findWaiterOrders(query, currentUser);
+  }
+
   @Get(':id')
   @RequirePermissions('order:read')
   findOne(@Param('id') id: string, @CurrentUser() currentUser: any) {

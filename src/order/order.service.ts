@@ -259,9 +259,6 @@ export class OrderService {
       where: { id, businessId: currentUser.businessId },
     });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.waiterId !== currentUser.id) {
-      throw new ForbiddenException('Access denied');
-    }
     if (order.billStatus === BillStatus.PAID) {
       throw new BadRequestException('Cannot modify a paid order');
     }
@@ -399,6 +396,55 @@ export class OrderService {
       tableId: table?.id ?? rest.tableId,
       tableName: table?.tableName ?? null,
     }));
+
+    return {
+      success: true,
+      data: flattened,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async findWaiterOrders(
+    query: PaginationQueryDto,
+    currentUser: any,
+  ): Promise<PaginatedResult<any>> {
+    const page = Math.max(+(query.page || 1), 1);
+    const limit = Math.min(Math.max(+(query.limit || 10), 1), 100);
+    const skip = (page - 1) * limit;
+    const sortOrder = query.sortOrder === 'ASC' ? 'ASC' : 'DESC';
+    const sortBy = query.sortBy || 'createdAt';
+
+    const base: any = {};
+    if (currentUser.businessId) {
+      base.businessId = currentUser.businessId;
+    }
+    if (query.billStatus) {
+      base.billStatus = query.billStatus;
+    }
+
+    const where = [
+      { ...base, createdBy: currentUser.id },
+      { ...base, waiterId: currentUser.id },
+    ];
+
+    const [data, total] = await this.orderRepository.findAndCount({
+      where,
+      skip,
+      take: limit,
+      relations: { table: true },
+      order: { [sortBy]: sortOrder },
+    });
+
+    const flattened = data.map((order) => {
+      const row: any = {
+        ...order,
+        tableId: order.table?.id ?? order.tableId,
+        tableName: order.table?.tableName ?? null,
+      };
+      delete row.table;
+      delete row.products;
+      return row;
+    });
 
     return {
       success: true,

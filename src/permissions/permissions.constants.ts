@@ -191,6 +191,12 @@ export const PERMISSIONS_LIST = [
     module: 'order',
     action: 'waiter-update',
   },
+  {
+    name: 'order:waiter-read',
+    description: 'View waiter orders',
+    module: 'order',
+    action: 'waiter-read',
+  },
 
   {
     name: 'expense:create',
