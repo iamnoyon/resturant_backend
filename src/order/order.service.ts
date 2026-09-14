@@ -230,7 +230,9 @@ export class OrderService {
       );
       await this.tokenService.createForOrder(
         manager,
-        created.id,
+        created.orderId,
+        table.id,
+        table.tableName,
         orderItems,
         productMap,
         currentUser.businessId,

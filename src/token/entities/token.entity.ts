@@ -16,7 +16,13 @@ export class Token {
   id: number;
 
   @Column({ nullable: true })
-  orderId: number;
+  orderId: string;
+
+  @Column({ nullable: true })
+  tableId: number;
+
+  @Column({ nullable: true })
+  tableName: string;
 
   @Column({ nullable: true })
   productId: number;

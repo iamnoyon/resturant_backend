@@ -1,7 +1,6 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TokenService } from './token.service';
-import { QueryTokenDto } from './dto/query-token.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
@@ -16,8 +15,8 @@ export class TokenController {
 
   @Get()
   @RequirePermissions('token:read')
-  findAll(@Query() query: QueryTokenDto, @CurrentUser() currentUser: any) {
-    return this.tokenService.findAll(query, currentUser);
+  findAll(@CurrentUser() currentUser: any) {
+    return this.tokenService.findAll(currentUser);
   }
 
   @Get('order/:orderId')
@@ -26,6 +25,6 @@ export class TokenController {
     @Param('orderId') orderId: string,
     @CurrentUser() currentUser: any,
   ) {
-    return this.tokenService.findByOrder(+orderId, currentUser);
+    return this.tokenService.findByOrder(orderId, currentUser);
   }
 }
