@@ -453,6 +453,25 @@ export class OrderService {
     };
   }
 
+  async findWaiterOrder(id: number, currentUser: any) {
+    const where: any = { id };
+    if (currentUser.businessId) {
+      where.businessId = currentUser.businessId;
+    }
+    const order = await this.orderRepository.findOne({
+      where,
+      relations: { table: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    const row: any = {
+      ...order,
+      tableId: order.table?.id ?? order.tableId,
+      tableName: order.table?.tableName ?? null,
+    };
+    delete row.table;
+    return { success: true, data: row };
+  }
+
   async findOne(id: number, currentUser: any) {
     const where: any = { id };
     if (
@@ -481,6 +500,9 @@ export class OrderService {
     }
     const order = await this.orderRepository.findOne({ where });
     if (!order) throw new NotFoundException('Order not found');
+    if (order.billStatus === BillStatus.PAID) {
+      throw new BadRequestException('Cannot modify a paid order');
+    }
     Object.assign(order, updateOrderDto, { updatedBy: currentUser.id });
     const saved = await this.orderRepository.save(order);
     return { success: true, message: 'Order updated', data: saved };
