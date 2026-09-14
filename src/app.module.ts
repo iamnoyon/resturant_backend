@@ -10,6 +10,7 @@ import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { TableModule } from './table/table.module';
 import { OrderModule } from './order/order.module';
+import { TokenModule } from './token/token.module';
 import { ExpenseModule } from './expense/expense.module';
 import { SeedModule } from './seed/seed.module';
 import { UploadModule } from './upload/upload.module';
@@ -75,6 +76,7 @@ import { RequestTrackerMiddleware } from './common/middleware/request-tracker.mi
     ProductModule,
     TableModule,
     OrderModule,
+    TokenModule,
     ExpenseModule,
     SeedModule,
     UploadModule,

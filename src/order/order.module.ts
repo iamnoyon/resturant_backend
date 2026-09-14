@@ -6,9 +6,13 @@ import { Order } from './entities/order.entity';
 import { Product } from '../product/entities/product.entity';
 import { Business } from '../business/entities/business.entity';
 import { Table } from '../table/entities/table.entity';
+import { TokenModule } from '../token/token.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, Product, Business, Table])],
+  imports: [
+    TypeOrmModule.forFeature([Order, Product, Business, Table]),
+    TokenModule,
+  ],
   controllers: [OrderController],
   providers: [OrderService],
 })

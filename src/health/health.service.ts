@@ -131,12 +131,16 @@ export class HealthService {
 
     return [
       { name: 'Health', value: status },
-      { name: 'Uptime', value: this.formatUptime(Math.floor(process.uptime())) },
+      {
+        name: 'Uptime',
+        value: this.formatUptime(Math.floor(process.uptime())),
+      },
       { name: 'CPU Usage', value: cpuUsage },
       {
         name: 'Memory Usage',
         value:
-          Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100 * 100) / 100,
+          Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100 * 100) /
+          100,
       },
     ];
   }

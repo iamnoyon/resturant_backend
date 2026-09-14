@@ -21,6 +21,7 @@ import {
 import { Role } from '../common/enums/role.enum';
 import { BillStatus } from '../common/enums/bill-status.enum';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
+import { TokenService } from '../token/token.service';
 
 @Injectable()
 export class OrderService {
@@ -34,6 +35,7 @@ export class OrderService {
     @InjectRepository(Table)
     private tableRepository: Repository<Table>,
     private dataSource: DataSource,
+    private tokenService: TokenService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, currentUser: any) {
@@ -222,6 +224,18 @@ export class OrderService {
         createdBy: currentUser.id,
       });
       const created = await manager.save(order);
+
+      const productMap = new Map(
+        products.map((product) => [product.id, product]),
+      );
+      await this.tokenService.createForOrder(
+        manager,
+        created.id,
+        orderItems,
+        productMap,
+        currentUser.businessId,
+        currentUser.id,
+      );
 
       for (const product of products) {
         if (product.stockRequired) {

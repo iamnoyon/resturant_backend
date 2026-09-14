@@ -199,6 +199,13 @@ export const PERMISSIONS_LIST = [
   },
 
   {
+    name: 'token:read',
+    description: 'View kitchen tokens',
+    module: 'token',
+    action: 'read',
+  },
+
+  {
     name: 'expense:create',
     description: 'Create expenses',
     module: 'expense',
