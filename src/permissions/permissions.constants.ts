@@ -204,6 +204,12 @@ export const PERMISSIONS_LIST = [
     module: 'token',
     action: 'read',
   },
+  {
+    name: 'token:update',
+    description: 'Update kitchen token status',
+    module: 'token',
+    action: 'update',
+  },
 
   {
     name: 'expense:create',

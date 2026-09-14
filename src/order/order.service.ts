@@ -399,7 +399,8 @@ export class OrderService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }
@@ -501,7 +502,8 @@ export class OrderService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }
@@ -518,7 +520,8 @@ export class OrderService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }
@@ -537,7 +540,8 @@ export class OrderService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }
@@ -569,7 +573,8 @@ export class OrderService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }

@@ -39,10 +39,11 @@ export class UsersService {
     } else if (currentUser.role === Role.ADMIN) {
       if (
         createUserDto.role !== Role.CASHIER &&
-        createUserDto.role !== Role.WAITER
+        createUserDto.role !== Role.WAITER &&
+        createUserDto.role !== Role.CHEF
       ) {
         throw new ForbiddenException(
-          'Admin can only create cashier and waiter accounts',
+          'Admin can only create cashier, waiter and chef accounts',
         );
       }
       if (!currentUser.businessId) {
@@ -114,6 +115,8 @@ export class UsersService {
     } else if (currentUser.role === Role.CASHIER) {
       where.id = currentUser.id;
     } else if (currentUser.role === Role.WAITER) {
+      where.id = currentUser.id;
+    } else if (currentUser.role === Role.CHEF) {
       where.id = currentUser.id;
     }
 
@@ -222,6 +225,9 @@ export class UsersService {
     } else if (currentUser.role === Role.WAITER) {
       if (user.id !== currentUser.id)
         throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.CHEF) {
+      if (user.id !== currentUser.id)
+        throw new ForbiddenException('Access denied');
     }
     return { success: true, data: user };
   }
@@ -238,6 +244,9 @@ export class UsersService {
       if (user.id !== currentUser.id)
         throw new ForbiddenException('Access denied');
     } else if (currentUser.role === Role.WAITER) {
+      if (user.id !== currentUser.id)
+        throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.CHEF) {
       if (user.id !== currentUser.id)
         throw new ForbiddenException('Access denied');
     }
@@ -286,6 +295,8 @@ export class UsersService {
       throw new ForbiddenException('Access denied');
     } else if (currentUser.role === Role.WAITER) {
       throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.CHEF) {
+      throw new ForbiddenException('Access denied');
     }
 
     user.status = dto.status as UserStatus;
@@ -310,6 +321,8 @@ export class UsersService {
     } else if (currentUser.role === Role.CASHIER) {
       throw new ForbiddenException('Access denied');
     } else if (currentUser.role === Role.WAITER) {
+      throw new ForbiddenException('Access denied');
+    } else if (currentUser.role === Role.CHEF) {
       throw new ForbiddenException('Access denied');
     }
     await this.userRepository.softRemove(user);

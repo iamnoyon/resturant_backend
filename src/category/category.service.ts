@@ -49,7 +49,8 @@ export class CategoryService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }
@@ -77,7 +78,8 @@ export class CategoryService {
     if (
       (currentUser.role === Role.ADMIN ||
         currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
+        currentUser.role === Role.WAITER ||
+        currentUser.role === Role.CHEF) &&
       category.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -95,7 +97,8 @@ export class CategoryService {
     if (
       (currentUser.role === Role.ADMIN ||
         currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
+        currentUser.role === Role.WAITER ||
+        currentUser.role === Role.CHEF) &&
       category.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');
@@ -110,7 +113,8 @@ export class CategoryService {
     if (
       currentUser.role === Role.ADMIN ||
       currentUser.role === Role.CASHIER ||
-      currentUser.role === Role.WAITER
+      currentUser.role === Role.WAITER ||
+      currentUser.role === Role.CHEF
     ) {
       where.businessId = currentUser.businessId;
     }
@@ -130,7 +134,8 @@ export class CategoryService {
     if (
       (currentUser.role === Role.ADMIN ||
         currentUser.role === Role.CASHIER ||
-        currentUser.role === Role.WAITER) &&
+        currentUser.role === Role.WAITER ||
+        currentUser.role === Role.CHEF) &&
       category.businessId !== currentUser.businessId
     ) {
       throw new ForbiddenException('Access denied');

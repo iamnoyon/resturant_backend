@@ -1,6 +1,7 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TokenService } from './token.service';
+import { UpdateTokenStatusDto } from './dto/update-token-status.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator';
@@ -26,5 +27,19 @@ export class TokenController {
     @CurrentUser() currentUser: any,
   ) {
     return this.tokenService.findByOrder(orderId, currentUser);
+  }
+
+  @Patch(':id/status')
+  @RequirePermissions('token:update')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateTokenStatusDto: UpdateTokenStatusDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.tokenService.updateStatus(
+      +id,
+      updateTokenStatusDto.status,
+      currentUser,
+    );
   }
 }

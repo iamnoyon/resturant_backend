@@ -140,7 +140,11 @@ export class PermissionsService implements OnModuleInit {
     }
 
     if (currentUser.role === Role.ADMIN) {
-      if (targetUser.role !== Role.CASHIER && targetUser.role !== Role.WAITER) {
+      if (
+        targetUser.role !== Role.CASHIER &&
+        targetUser.role !== Role.WAITER &&
+        targetUser.role !== Role.CHEF
+      ) {
         throw new ForbiddenException(
           'You can only manage cashier and waiter permissions',
         );
@@ -166,7 +170,11 @@ export class PermissionsService implements OnModuleInit {
     }
 
     if (currentUser.role === Role.ADMIN) {
-      if (targetUser.role !== Role.CASHIER && targetUser.role !== Role.WAITER) {
+      if (
+        targetUser.role !== Role.CASHIER &&
+        targetUser.role !== Role.WAITER &&
+        targetUser.role !== Role.CHEF
+      ) {
         throw new ForbiddenException(
           'You can only view cashier and waiter permissions',
         );
