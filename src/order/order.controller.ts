@@ -55,7 +55,7 @@ export class OrderController {
     @CurrentUser() currentUser: any,
   ) {
     return this.orderService.updateForWaiter(
-      +id,
+      id,
       updateWaiterOrderDto,
       currentUser,
     );
@@ -79,7 +79,7 @@ export class OrderController {
   @Get('waiter/:id')
   @RequirePermissions('order:waiter-read')
   findWaiterOrder(@Param('id') id: string, @CurrentUser() currentUser: any) {
-    return this.orderService.findWaiterOrder(+id, currentUser);
+    return this.orderService.findWaiterOrder(id, currentUser);
   }
 
   @Get(':id')

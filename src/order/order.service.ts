@@ -258,7 +258,7 @@ export class OrderService {
   }
 
   async updateForWaiter(
-    id: number,
+    orderId: string,
     updateWaiterOrderDto: UpdateWaiterOrderDto,
     currentUser: any,
   ) {
@@ -280,7 +280,7 @@ export class OrderService {
     }
 
     const order = await this.orderRepository.findOne({
-      where: { id, businessId: currentUser.businessId },
+      where: { orderId, businessId: currentUser.businessId },
     });
     if (!order) throw new NotFoundException('Order not found');
     if (order.billStatus === BillStatus.PAID) {
@@ -477,8 +477,8 @@ export class OrderService {
     };
   }
 
-  async findWaiterOrder(id: number, currentUser: any) {
-    const where: any = { id };
+  async findWaiterOrder(orderId: string, currentUser: any) {
+    const where: any = { orderId };
     if (currentUser.businessId) {
       where.businessId = currentUser.businessId;
     }
