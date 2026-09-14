@@ -113,6 +113,10 @@ export class OrderService {
     createWaiterOrderDto: CreateWaiterOrderDto,
     currentUser: any,
   ) {
+    if (currentUser.role !== Role.WAITER) {
+      throw new ForbiddenException('Only waiters can place waiter orders');
+    }
+
     if (!currentUser.businessId) {
       throw new BadRequestException('You must create a restaurant first');
     }
@@ -242,6 +246,10 @@ export class OrderService {
     updateWaiterOrderDto: UpdateWaiterOrderDto,
     currentUser: any,
   ) {
+    if (currentUser.role !== Role.WAITER) {
+      throw new ForbiddenException('Only waiters can modify waiter orders');
+    }
+
     if (!currentUser.businessId) {
       throw new BadRequestException('You must create a restaurant first');
     }
