@@ -538,7 +538,9 @@ export class OrderService {
     const products = productIds.length
       ? await this.productRepository.find({ where: { id: In(productIds) } })
       : [];
-    const productMap = new Map(products.map((product) => [product.id, product]));
+    const productMap = new Map(
+      products.map((product) => [product.id, product]),
+    );
 
     const invoiceItems = items.map((item) => {
       const product = productMap.get(item.productId);
