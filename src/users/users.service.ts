@@ -45,6 +45,11 @@ export class UsersService {
           'Admin can only create cashier and waiter accounts',
         );
       }
+      if (!currentUser.businessId) {
+        throw new BadRequestException(
+          'Create your business before creating users',
+        );
+      }
     } else {
       throw new ForbiddenException('You are not authorized to create users');
     }
@@ -73,7 +78,10 @@ export class UsersService {
       profileImageUrl: createUserDto.profileImageUrl || null,
       password: hashedPassword,
       role: createUserDto.role as Role,
-      businessId: createUserDto.businessId || currentUser.businessId,
+      businessId:
+        currentUser.role === Role.SUPERADMIN
+          ? createUserDto.businessId || null
+          : currentUser.businessId,
       createdBy: currentUser.id,
       status: UserStatus.ACTIVE,
     } as unknown as User);
