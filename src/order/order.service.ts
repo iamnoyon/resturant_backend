@@ -397,6 +397,7 @@ export class OrderService {
     const flattened = data.map(({ table, products, ...rest }) => ({
       ...rest,
       tableId: table?.id ?? rest.tableId,
+      tableName: table?.tableName ?? null,
     }));
 
     return {
