@@ -20,15 +20,20 @@ export class PermissionsService implements OnModuleInit {
   }
 
   async seedPermissions() {
-    const count = await this.permissionRepository.count();
-    if (count > 0) {
-      console.log('[Permissions] Already seeded, skipping.');
+    const existingPerms = await this.permissionRepository.find();
+    const existingNames = new Set(existingPerms.map((p) => p.name));
+    const newPerms = PERMISSIONS_LIST.filter((p) => !existingNames.has(p.name));
+
+    if (newPerms.length === 0) {
+      console.log('[Permissions] All permissions exist, nothing to add.');
       return;
     }
 
-    console.log('[Permissions] Seeding permission list...');
-    await this.permissionRepository.save(PERMISSIONS_LIST);
-    console.log(`[Permissions] Seeded ${PERMISSIONS_LIST.length} permissions.`);
+    console.log(`[Permissions] Seeding ${newPerms.length} permission(s)...`);
+    await this.permissionRepository.save(newPerms);
+    console.log(
+      `[Permissions] Seeded: ${newPerms.map((p) => p.name).join(', ')}`,
+    );
   }
 
   async findAll() {

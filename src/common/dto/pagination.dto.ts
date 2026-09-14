@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsEnum } from 'class-validator';
+import { BillStatus } from '../enums/bill-status.enum';
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({
@@ -26,6 +27,15 @@ export class PaginationQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Filter by category ID' })
   @IsOptional()
   categoryId?: number;
+
+  @ApiPropertyOptional({
+    example: 'unpaid',
+    description: 'Filter by bill status',
+    enum: BillStatus,
+  })
+  @IsOptional()
+  @IsEnum(BillStatus)
+  billStatus?: BillStatus;
 
   @ApiPropertyOptional({
     example: 'createdAt',

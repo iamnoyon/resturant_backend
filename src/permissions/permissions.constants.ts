@@ -179,6 +179,18 @@ export const PERMISSIONS_LIST = [
     module: 'order',
     action: 'update-bill-status',
   },
+  {
+    name: 'order:waiter-create',
+    description: 'Place orders (waiter)',
+    module: 'order',
+    action: 'waiter-create',
+  },
+  {
+    name: 'order:waiter-update',
+    description: 'Modify orders (waiter)',
+    module: 'order',
+    action: 'waiter-update',
+  },
 
   {
     name: 'expense:create',

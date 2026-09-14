@@ -12,6 +12,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateWaiterOrderDto } from './dto/create-waiter-order.dto';
+import { UpdateWaiterOrderDto } from './dto/update-waiter-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -34,6 +36,29 @@ export class OrderController {
     @CurrentUser() currentUser: any,
   ) {
     return this.orderService.create(createOrderDto, currentUser);
+  }
+
+  @Post('waiter')
+  @RequirePermissions('order:waiter-create')
+  createForWaiter(
+    @Body() createWaiterOrderDto: CreateWaiterOrderDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.orderService.createForWaiter(createWaiterOrderDto, currentUser);
+  }
+
+  @Patch('waiter/:id')
+  @RequirePermissions('order:waiter-update')
+  updateForWaiter(
+    @Param('id') id: string,
+    @Body() updateWaiterOrderDto: UpdateWaiterOrderDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.orderService.updateForWaiter(
+      +id,
+      updateWaiterOrderDto,
+      currentUser,
+    );
   }
 
   @Get()
