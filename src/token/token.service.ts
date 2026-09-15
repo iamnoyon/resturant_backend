@@ -49,13 +49,18 @@ export class TokenService {
   }
 
   async findAll(currentUser: any) {
-    const where: any = {};
-    if (currentUser.businessId) {
-      where.businessId = currentUser.businessId;
+    const empty = {
+      success: true,
+      message: 'Tokens retrieved successfully',
+      data: [],
+    };
+
+    if (!currentUser?.businessId) {
+      return empty;
     }
 
     const tokens = await this.tokenRepository.find({
-      where,
+      where: { businessId: currentUser.businessId },
       order: { createdAt: 'DESC' },
     });
 
@@ -70,7 +75,29 @@ export class TokenService {
       }
     }
 
-    const data = [...grouped.entries()].map(([orderId, items]) => ({
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const cutoff = Date.now() - TWELVE_HOURS_MS;
+
+    const visible = [...grouped.entries()]
+      .filter(([, items]) => {
+        const allServed = items.every((i) => i.status === TokenStatus.SERVED);
+        if (!allServed) return true;
+        const allOlderThan12h = items.every(
+          (i) => i.createdAt && i.createdAt.getTime() < cutoff,
+        );
+        return !allOlderThan12h;
+      })
+      .sort(([, a], [, b]) => {
+        const aMax = Math.max(
+          ...a.map((i) => (i.createdAt ? i.createdAt.getTime() : 0)),
+        );
+        const bMax = Math.max(
+          ...b.map((i) => (i.createdAt ? i.createdAt.getTime() : 0)),
+        );
+        return bMax - aMax;
+      });
+
+    const data = visible.map(([orderId, items]) => ({
       orderId,
       tableId: items[0]?.tableId ?? null,
       tableName: items[0]?.tableName ?? null,
