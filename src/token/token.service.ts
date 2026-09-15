@@ -59,8 +59,13 @@ export class TokenService {
       return empty;
     }
 
+    const where: any = { businessId: currentUser.businessId };
+    if (currentUser.role === Role.WAITER) {
+      where.createdBy = currentUser.id;
+    }
+
     const tokens = await this.tokenRepository.find({
-      where: { businessId: currentUser.businessId },
+      where,
       order: { createdAt: 'DESC' },
     });
 
