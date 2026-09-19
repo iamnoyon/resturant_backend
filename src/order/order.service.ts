@@ -613,11 +613,31 @@ export class OrderService {
     }
     const order = await this.orderRepository.findOne({ where });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.billStatus === BillStatus.PAID) {
+
+    const wasPaid = order.billStatus === BillStatus.PAID;
+    if (wasPaid) {
       throw new BadRequestException('Cannot modify a paid order');
     }
-    Object.assign(order, updateOrderDto, { updatedBy: currentUser.id });
-    const saved = await this.orderRepository.save(order);
+
+    const willBePaid =
+      updateOrderDto.billStatus !== undefined &&
+      updateOrderDto.billStatus === BillStatus.PAID;
+
+    const saved = await this.dataSource.transaction(async (manager) => {
+      Object.assign(order, updateOrderDto, { updatedBy: currentUser.id });
+      const updated = await manager.save(order);
+
+      if (!wasPaid && willBePaid) {
+        await this.tokenService.markAllServedForOrder(
+          manager,
+          order.orderId,
+          currentUser.id,
+        );
+      }
+
+      return updated;
+    });
+
     return { success: true, message: 'Order updated', data: saved };
   }
 
