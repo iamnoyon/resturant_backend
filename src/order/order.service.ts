@@ -676,7 +676,11 @@ export class OrderService {
       const updated = await manager.save(order);
 
       if (!wasPaid && willBePaid) {
-        await this.tokenService.markAllServedForOrder(manager, order.orderId);
+        await this.tokenService.markAllServedForOrder(
+          manager,
+          order.orderId,
+          currentUser.id,
+        );
       }
 
       return updated;

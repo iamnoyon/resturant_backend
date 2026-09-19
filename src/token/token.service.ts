@@ -138,11 +138,13 @@ export class TokenService {
   async markAllServedForOrder(
     manager: EntityManager,
     orderId: string,
+    userId: number,
   ): Promise<void> {
     const tokens = await manager.find(Token, { where: { orderId } });
     for (const token of tokens) {
       if (token.status !== TokenStatus.SERVED) {
         token.status = TokenStatus.SERVED;
+        token.updatedBy = userId;
         await manager.save(token);
       }
     }

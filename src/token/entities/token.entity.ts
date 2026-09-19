@@ -42,6 +42,9 @@ export class Token {
   @Column({ nullable: true })
   createdBy: number;
 
+  @Column({ nullable: true })
+  updatedBy: number;
+
   @CreateDateColumn()
   createdAt: Date;
 
