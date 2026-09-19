@@ -135,6 +135,19 @@ export class TokenService {
     }
   }
 
+  async markAllServedForOrder(
+    manager: EntityManager,
+    orderId: string,
+  ): Promise<void> {
+    const tokens = await manager.find(Token, { where: { orderId } });
+    for (const token of tokens) {
+      if (token.status !== TokenStatus.SERVED) {
+        token.status = TokenStatus.SERVED;
+        await manager.save(token);
+      }
+    }
+  }
+
   async findAll(currentUser: any) {
     const empty = {
       success: true,

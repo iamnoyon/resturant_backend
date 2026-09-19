@@ -666,9 +666,22 @@ export class OrderService {
     }
     const order = await this.orderRepository.findOne({ where });
     if (!order) throw new NotFoundException('Order not found');
-    order.billStatus = billStatus;
-    order.updatedBy = currentUser.id;
-    const saved = await this.orderRepository.save(order);
+
+    const wasPaid = order.billStatus === BillStatus.PAID;
+    const willBePaid = billStatus === BillStatus.PAID;
+
+    const saved = await this.dataSource.transaction(async (manager) => {
+      order.billStatus = billStatus;
+      order.updatedBy = currentUser.id;
+      const updated = await manager.save(order);
+
+      if (!wasPaid && willBePaid) {
+        await this.tokenService.markAllServedForOrder(manager, order.orderId);
+      }
+
+      return updated;
+    });
+
     return {
       success: true,
       message: `Bill marked as ${billStatus}`,
