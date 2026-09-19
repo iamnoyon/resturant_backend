@@ -48,6 +48,93 @@ export class TokenService {
     return manager.save(tokens);
   }
 
+  async syncForOrder(
+    manager: EntityManager,
+    orderId: string,
+    tableId: number,
+    tableName: string,
+    newItems: { productId: number; quantity: number }[],
+    productMap: Map<number, { productName?: string }>,
+    businessId: number,
+    userId: number,
+  ): Promise<void> {
+    const existingTokens = await manager.find(Token, {
+      where: { orderId },
+    });
+
+    const existingByProduct = new Map<number, Token>();
+    for (const t of existingTokens) {
+      const pid = Number(t.productId);
+      if (pid && !existingByProduct.has(pid)) {
+        existingByProduct.set(pid, t);
+      }
+    }
+
+    for (const item of newItems) {
+      const productId = Number(item?.productId);
+      const newQty = Number(item?.quantity);
+      if (!productId || newQty < 1) continue;
+
+      const existing = existingByProduct.get(productId);
+
+      if (existing && existing.status === TokenStatus.COOKING) {
+        existing.quantity = newQty;
+        existing.tableId = tableId;
+        existing.tableName = tableName;
+        await manager.save(existing);
+        existingByProduct.delete(productId);
+        continue;
+      }
+
+      if (
+        existing &&
+        (existing.status === TokenStatus.READY ||
+          existing.status === TokenStatus.SERVED)
+      ) {
+        const oldQty = Number(existing.quantity || 0);
+        if (newQty > oldQty) {
+          const delta = newQty - oldQty;
+          const deltaToken = manager.create(Token, {
+            orderId,
+            tableId,
+            tableName,
+            productId,
+            productName: productMap.get(productId)?.productName ?? undefined,
+            quantity: delta,
+            status: TokenStatus.COOKING,
+            businessId,
+            createdBy: userId,
+          });
+          await manager.save(deltaToken);
+        }
+        existingByProduct.delete(productId);
+        continue;
+      }
+
+      if (!existing) {
+        const token = manager.create(Token, {
+          orderId,
+          tableId,
+          tableName,
+          productId,
+          productName: productMap.get(productId)?.productName ?? undefined,
+          quantity: newQty,
+          status: TokenStatus.COOKING,
+          businessId,
+          createdBy: userId,
+        });
+        await manager.save(token);
+        existingByProduct.delete(productId);
+      }
+    }
+
+    for (const [, token] of existingByProduct) {
+      if (token.status === TokenStatus.COOKING) {
+        await manager.remove(token);
+      }
+    }
+  }
+
   async findAll(currentUser: any) {
     const empty = {
       success: true,

@@ -381,6 +381,21 @@ export class OrderService {
       const profit = Number((totalBill - totalCost).toFixed(2));
       const discount = Number(order.discount || 0);
 
+      const table = await manager.findOne(Table, {
+        where: { id: order.tableId },
+      });
+
+      await this.tokenService.syncForOrder(
+        manager,
+        order.orderId,
+        order.tableId,
+        table?.tableName ?? '',
+        orderItems,
+        productMap,
+        currentUser.businessId,
+        currentUser.id,
+      );
+
       order.products = orderItems;
       order.totalBill = totalBill;
       order.subTotal = Number((totalBill - discount).toFixed(2));
