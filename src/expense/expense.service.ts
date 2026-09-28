@@ -30,6 +30,7 @@ export class ExpenseService {
       ...createExpenseDto,
       businessId: currentUser.businessId,
       createdBy: currentUser.id,
+      createdAt: createExpenseDto.createdAt || new Date()
     });
     const saved = await this.expenseRepository.save(expense);
     return { success: true, message: 'Expense created', data: saved };

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateExpenseDto {
   @ApiProperty({
@@ -9,4 +9,7 @@ export class CreateExpenseDto {
 
   @ApiProperty({ example: 2500.0, description: 'Expense amount/value' })
   expenseValue: number;
+
+  @ApiPropertyOptional({example: 10-12-2026, description: 'Date of expense'})
+  createdAt: Date;
 }
