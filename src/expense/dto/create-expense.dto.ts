@@ -10,6 +10,6 @@ export class CreateExpenseDto {
   @ApiProperty({ example: 2500.0, description: 'Expense amount/value' })
   expenseValue: number;
 
-  @ApiPropertyOptional({example: 10-12-2026, description: 'Date of expense'})
+  @ApiPropertyOptional({example: '2026-10-26', description: 'Date of expense'})
   createdAt: Date;
 }
