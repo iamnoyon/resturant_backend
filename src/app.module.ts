@@ -19,6 +19,7 @@ import { PackageModule } from './package/package.module';
 import { PaymentModule } from './payment/payment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
+import { AppController } from './app.controller';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { RequestTrackerMiddleware } from './common/middleware/request-tracker.middleware';
 
@@ -86,6 +87,7 @@ import { RequestTrackerMiddleware } from './common/middleware/request-tracker.mi
     DashboardModule,
     HealthModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
